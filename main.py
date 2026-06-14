@@ -350,6 +350,6 @@ def run_production_sahi_alpr(video_path):
 
 if __name__ == "__main__":
     # 替换成你的测试视频路径
-    test_video = r"D:\YOLO_ALPR_Project\测试图\14.mp4"
+    test_video = r"D:\YOLO_ALPR_Project\测试图\10.mp4"
     run_production_sahi_alpr(test_video)
     sys.exit(0)
