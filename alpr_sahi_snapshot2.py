@@ -4,6 +4,7 @@ import sys
 from PIL import Image, ImageDraw, ImageFont
 import time
 import os
+import shutil
 from ultralytics import YOLO
 from paddleocr import PaddleOCR
 
@@ -56,11 +57,22 @@ def resize_for_display(image, max_width=1280, max_height=720):
     return cv2.resize(image, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
 
 
-def draw_locked_plate_label(frame, plate_text, box):
-    """Draw the locked plate number above the tracked vehicle."""
-    vx1, vy1, vx2, vy2 = box
-    label_y = max(5, vy1 - 45)
-    return cv2_add_chinese_text(frame, plate_text, (vx1, label_y), textColor=(0, 255, 0), textSize=32)
+def reset_capture_dir(snapshot_dir):
+    """Keep captures limited to the current run."""
+    os.makedirs(snapshot_dir, exist_ok=True)
+    for entry in os.scandir(snapshot_dir):
+        if entry.is_dir(follow_symlinks=False):
+            shutil.rmtree(entry.path)
+        else:
+            os.remove(entry.path)
+
+
+def is_window_closed(window_name):
+    """Return True when the user closes an OpenCV window."""
+    try:
+        return cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) < 1
+    except cv2.error:
+        return True
 
 
 class ALPRVoter:
@@ -120,6 +132,9 @@ def run_production_sahi_alpr(video_path):
         print(f"✅ 已创建抓拍目录: {snapshot_dir}")
 
     # 2. 挂载模型 (使用绝对路径)
+    reset_capture_dir(snapshot_dir)
+    print(f"Captures reset for this run: {snapshot_dir}")
+
     vehicle_model = YOLO(r"D:\YOLO_ALPR_Project\yolo11n.pt")
     plate_model = YOLO(r"D:\YOLO_ALPR_Project\best_obb.pt")
     # Lazy init: PaddleOCR is the slowest startup component. Load it only after
@@ -136,8 +151,9 @@ def run_production_sahi_alpr(video_path):
         return
 
     # 窗口设置
-    cv2.namedWindow("Full ALPR View (Downscaled)", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("Full ALPR View (Downscaled)", 1280, 720)
+    main_window = "Full ALPR View (Downscaled)"
+    cv2.namedWindow(main_window, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(main_window, 1280, 720)
 
     ROI_MARGIN = 50
     VEHICLE_CLASSES = [2, 5, 7]  # COCO: car, bus, truck. Excludes motorcycle/e-bike.
@@ -197,7 +213,8 @@ def run_production_sahi_alpr(video_path):
 
                 # 策略拦截一：如果已经锁定了稳固结果，直接挂字，跳过全套计算！
                 if state["has_final_result"]:
-                    frame = draw_locked_plate_label(frame, state["final_text"], (vx1, vy1, vx2, vy2))
+                    frame = cv2_add_chinese_text(frame, state["final_text"], (vx1, vy1 - 40), textColor=(0, 255, 0),
+                                                 textSize=30)
                     continue
 
                 # ==========================================
@@ -265,7 +282,6 @@ def run_production_sahi_alpr(video_path):
                             # 达成共识，锁定状态机！以后这辆车再也不用跑 OCR 了
                             state["has_final_result"] = True
                             state["final_text"] = final_result
-                            frame = draw_locked_plate_label(frame, final_result, (vx1, vy1, vx2, vy2))
                             print(f"✅ [ID {track_id}] 锁定共识车牌: {final_result} - conf:{conf:.2f}")
 
                             # 策略拦截二：全流量证据抓拍 (成功瞬间触发一次)
@@ -345,9 +361,10 @@ def run_production_sahi_alpr(video_path):
 
         # 全流量防变形缩小显示
         display_full = cv2.resize(frame, (1280, 720))
-        cv2.imshow("Full ALPR View (Downscaled)", display_full)
+        cv2.imshow(main_window, display_full)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q') or is_window_closed(main_window):
             break
 
     cap.release()
