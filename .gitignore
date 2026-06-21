@@ -1,12 +1,20 @@
 # 忽略虚拟环境
 .venv/
 
+LibreOffice/
+*.log
 # 忽略数据集和图片
 Dataset/
 captures/
 测试图/
 *.mp4
 *.pth
+
+# Local verification outputs and tool caches
+captures_topk/
+Ultralytics/
+PaddleCache/
+__pycache__/
 
 # 忽略所有压缩包
 *.zip
