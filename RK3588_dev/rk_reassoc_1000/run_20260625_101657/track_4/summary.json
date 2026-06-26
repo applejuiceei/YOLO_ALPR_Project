@@ -1,0 +1,101 @@
+{
+  "track_id": 4,
+  "locked_text": null,
+  "locked_frame": null,
+  "locked_consensus": null,
+  "plate_anchor": {
+    "x1": 0.2924332022666931,
+    "y1": 0.774444043636322,
+    "x2": 0.5082160830497742,
+    "y2": 0.879852831363678
+  },
+  "locked_plate_anchor": null,
+  "motion_model": "kalman_box_cv_with_plate_anchor",
+  "kalman_state": {
+    "cx_cy_w_h": [
+      642.0,
+      655.0,
+      142.0,
+      108.0
+    ],
+    "vx_vy_vw_vh": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "last_box": [
+    571,
+    601,
+    713,
+    709
+  ],
+  "last_detection_frame": 280,
+  "merged_track_ids": [],
+  "reassociation_events": [],
+  "plate_hits": 1,
+  "vote_history": [
+    "辽153R10"
+  ],
+  "vote_events": [
+    {
+      "frame_idx": 280,
+      "text": "辽153R10",
+      "confidence": 0.7093280553817749,
+      "weight": 0.5253529309390198
+    }
+  ],
+  "rejected_reasons": {},
+  "candidates": [
+    {
+      "frame_idx": 280,
+      "track_id": 4,
+      "score": 0.5271278615583779,
+      "subscores": {
+        "plate_area_score": 0.06686675836369395,
+        "sharpness_score": 0.6138676862145171,
+        "exposure_score": 0.9924479166666667,
+        "contrast_score": 0.7670286214172986,
+        "obb_score": 0.93994140625
+      },
+      "metrics": {
+        "plate_area": 334.33379181846976,
+        "laplacian_variance": 68.48155425919427,
+        "gray_std": 49.08983177070711,
+        "clipped_ratio": 0.0037760416666666667,
+        "obb_confidence": 0.93994140625
+      },
+      "obb_score": 0.93994140625,
+      "plate_area": 334.33379181846976,
+      "corners": [
+        [
+          612.5255126953125,
+          685.060791015625
+        ],
+        [
+          643.015380859375,
+          684.6399536132812
+        ],
+        [
+          643.1666870117188,
+          695.603271484375
+        ],
+        [
+          612.6768188476562,
+          696.0241088867188
+        ]
+      ],
+      "vehicle_box": [
+        571,
+        601,
+        713,
+        709
+      ],
+      "vehicle_conf": 0.6923828125,
+      "ocr_text": "辽153R10",
+      "ocr_conf": 0.7093280553817749,
+      "rank": 1
+    }
+  ]
+}

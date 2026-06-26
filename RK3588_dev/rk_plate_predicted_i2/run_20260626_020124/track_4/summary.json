@@ -1,0 +1,229 @@
+{
+  "track_id": 4,
+  "locked_text": null,
+  "locked_frame": null,
+  "locked_consensus": {
+    "text": "冀B6R9F9",
+    "event_count": 3,
+    "min_position_ratio": 1.0,
+    "mean_position_ratio": 1.0,
+    "province_position_ratio": 0.6655981123638303,
+    "all_position_ratios": [
+      0.6655981123638303,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "deferred_reason": "lock vehicle confidence"
+  },
+  "plate_anchor": {
+    "x1": 0.5722699761390686,
+    "y1": 0.6271443367004395,
+    "x2": 0.7876206040382385,
+    "y2": 0.7287436127662659
+  },
+  "locked_plate_anchor": null,
+  "motion_model": "kalman_box_cv_with_plate_anchor",
+  "kalman_state": {
+    "cx_cy_w_h": [
+      1297.028,
+      792.846,
+      207.598,
+      160.472
+    ],
+    "vx_vy_vw_vh": [
+      -15.437,
+      -20.309,
+      -10.221,
+      -9.249
+    ]
+  },
+  "last_box": [
+    1197,
+    717,
+    1408,
+    883
+  ],
+  "last_detection_frame": 751,
+  "last_plate_attempt_frame": 752,
+  "plate_attempts": 3,
+  "plate_hits": 3,
+  "vote_history": [
+    "黑B6R9F9",
+    "冀B6R9F9",
+    "冀B6R9F9"
+  ],
+  "vote_events": [
+    {
+      "frame_idx": 748,
+      "text": "黑B6R9F9",
+      "confidence": 0.9645540118217468,
+      "weight": 0.6684596416641786
+    },
+    {
+      "frame_idx": 750,
+      "text": "冀B6R9F9",
+      "confidence": 0.9640531539916992,
+      "weight": 0.6543888257945123
+    },
+    {
+      "frame_idx": 752,
+      "text": "冀B6R9F9",
+      "confidence": 0.9980441927909851,
+      "weight": 0.6761224306705228
+    }
+  ],
+  "rejected_reasons": {},
+  "candidates": [
+    {
+      "frame_idx": 748,
+      "track_id": 4,
+      "score": 0.4126044743918416,
+      "subscores": {
+        "plate_area_score": 0.15239559042155743,
+        "sharpness_score": 0.5354899134851759,
+        "exposure_score": 0.28398437499999996,
+        "contrast_score": 0.5978115307374368,
+        "obb_score": 0.96240234375
+      },
+      "metrics": {
+        "plate_area": 761.9779521077871,
+        "laplacian_variance": 39.42985507541233,
+        "gray_std": 38.25993796719595,
+        "clipped_ratio": 0.3580078125,
+        "obb_confidence": 0.96240234375
+      },
+      "obb_score": 0.96240234375,
+      "plate_area": 761.9779521077871,
+      "corners": [
+        [
+          1338.2073974609375,
+          849.9921875
+        ],
+        [
+          1385.9381103515625,
+          850.1751708984375
+        ],
+        [
+          1385.876953125,
+          866.1390380859375
+        ],
+        [
+          1338.146240234375,
+          865.9560546875
+        ]
+      ],
+      "vehicle_box": [
+        1215,
+        748,
+        1443,
+        922
+      ],
+      "vehicle_conf": 0.76123046875,
+      "ocr_text": "黑B6R9F9",
+      "ocr_conf": 0.9645540118217468,
+      "rank": 1
+    },
+    {
+      "frame_idx": 750,
+      "track_id": 4,
+      "score": 0.38496656486721326,
+      "subscores": {
+        "plate_area_score": 0.13163728922009468,
+        "sharpness_score": 0.5009019617407882,
+        "exposure_score": 0.23854166666666665,
+        "contrast_score": 0.567967532429437,
+        "obb_score": 0.96044921875
+      },
+      "metrics": {
+        "plate_area": 658.1864461004734,
+        "laplacian_variance": 30.836353292465212,
+        "gray_std": 36.34992207548397,
+        "clipped_ratio": 0.3807291666666667,
+        "obb_confidence": 0.96044921875
+      },
+      "obb_score": 0.96044921875,
+      "plate_area": 658.1864461004734,
+      "corners": [
+        [
+          1307.97314453125,
+          809.802978515625
+        ],
+        [
+          1352.519287109375,
+          810.383544921875
+        ],
+        [
+          1352.326904296875,
+          825.1563720703125
+        ],
+        [
+          1307.7806396484375,
+          824.5758666992188
+        ]
+      ],
+      "vehicle_box": [
+        1188,
+        710,
+        1394,
+        861
+      ],
+      "vehicle_conf": 0.76123046875,
+      "ocr_text": "冀B6R9F9",
+      "ocr_conf": 0.9640531539916992,
+      "rank": 2
+    },
+    {
+      "frame_idx": 752,
+      "track_id": 4,
+      "score": 0.38050970038954063,
+      "subscores": {
+        "plate_area_score": 0.12284720906317234,
+        "sharpness_score": 0.4980093146385418,
+        "exposure_score": 0.23541666666666672,
+        "contrast_score": 0.5650882032586775,
+        "obb_score": 0.962890625
+      },
+      "metrics": {
+        "plate_area": 614.2360453158617,
+        "laplacian_variance": 30.20643216345045,
+        "gray_std": 36.16564500855536,
+        "clipped_ratio": 0.38229166666666664,
+        "obb_confidence": 0.962890625
+      },
+      "obb_score": 0.962890625,
+      "plate_area": 614.2360453158617,
+      "corners": [
+        [
+          1296.0052490234375,
+          791.6987915039062
+        ],
+        [
+          1338.1612548828125,
+          792.4746704101562
+        ],
+        [
+          1337.8931884765625,
+          807.040283203125
+        ],
+        [
+          1295.7371826171875,
+          806.264404296875
+        ]
+      ],
+      "vehicle_box": [
+        1183,
+        697,
+        1380,
+        848
+      ],
+      "vehicle_conf": 0.65478515625,
+      "ocr_text": "冀B6R9F9",
+      "ocr_conf": 0.9980441927909851,
+      "rank": 3
+    }
+  ]
+}

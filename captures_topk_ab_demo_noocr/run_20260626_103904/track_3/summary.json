@@ -1,0 +1,80 @@
+{
+  "track_id": 3,
+  "seen_frames": 62,
+  "plate_hits": 1,
+  "locked_text": "PLATE",
+  "locked_confidence": 0.9490638375282288,
+  "locked_frame": 593,
+  "locked_consensus": {
+    "source": "plate_detect",
+    "obb_confidence": 0.9490638375282288,
+    "candidate_score": 0.533786398988954,
+    "plate_area": 1323.75
+  },
+  "vote_history": [],
+  "vote_events": [],
+  "vote_counts": {},
+  "topk": 1,
+  "candidates": [
+    {
+      "rank": 1,
+      "frame_idx": 593,
+      "track_id": 3,
+      "score": 0.533786398988954,
+      "subscores": {
+        "plate_area_score": 0.26475,
+        "sharpness_score": 0.6665583841204369,
+        "exposure_score": 0.30833333333333335,
+        "contrast_score": 1.0,
+        "obb_score": 0.9490638375282288
+      },
+      "raw_metrics": {
+        "plate_area": 1323.75,
+        "laplacian_variance": 98.99182393391926,
+        "gray_std": 89.72967287034625,
+        "clipped_ratio": 0.3458333333333333,
+        "obb_confidence": 0.9490638375282288
+      },
+      "geometry": {
+        "width": 64.0852165222168,
+        "height": 20.65176773071289,
+        "aspect": 3.103134673886079,
+        "center_x": 1525.74755859375,
+        "center_y": 1070.970947265625,
+        "vehicle_overlap": 0.8261354689986803
+      },
+      "vehicle_confidence": 0.7936913371086121,
+      "vehicle_box_xyxy": [
+        1305,
+        882,
+        1633,
+        1078
+      ],
+      "plate_corners_xy": [
+        [
+          1557.9324951171875,
+          1080.844482421875
+        ],
+        [
+          1557.6416015625,
+          1060.19482421875
+        ],
+        [
+          1493.562744140625,
+          1061.097412109375
+        ],
+        [
+          1493.8536376953125,
+          1081.7471923828125
+        ]
+      ],
+      "files": {
+        "full": "full_rank1.jpg",
+        "vehicle": "vehicle_rank1.jpg",
+        "plate": "plate_rank1.jpg"
+      }
+    }
+  ],
+  "rejected_count": 0,
+  "rejected_candidates": []
+}

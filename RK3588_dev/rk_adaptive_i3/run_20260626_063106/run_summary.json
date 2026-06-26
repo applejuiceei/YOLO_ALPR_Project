@@ -1,0 +1,908 @@
+{
+  "created_at": "2026-06-26T06:32:25",
+  "args": {
+    "video": "/root/deploy/144.mp4",
+    "camera_device": "/dev/video22",
+    "camera_width": 1920,
+    "camera_height": 1080,
+    "camera_fps": 25.0,
+    "mipi_fourcc": "UYVY",
+    "mipi_color_mode": "uyvy",
+    "mipi_backend": "v4l2ctl",
+    "mipi_gray_world": false,
+    "mipi_buffer_size": 1,
+    "vehicle_model": "/root/deploy/vehicle.rknn",
+    "plate_model": "/root/deploy/best_obb.rknn",
+    "plate_imgsz": 640,
+    "ocr_model": "plate_rec.rknn",
+    "dict": "dict.txt",
+    "ocr_engine": "hyperlpr3",
+    "hyperlpr_pre_ocr": false,
+    "lock_on_plate_detect": false,
+    "plate_detected_label": "PLATE",
+    "output": "/root/alpr_topk_rk3588/runs_rk_adaptive",
+    "topk": 5,
+    "vehicle_conf": 0.55,
+    "plate_conf": 0.25,
+    "min_process_vehicle_conf": 0.65,
+    "min_process_vehicle_width": 90,
+    "min_process_vehicle_height": 70,
+    "min_process_vehicle_area": 8000,
+    "min_process_vehicle_area_ratio": 0.003,
+    "process_roi": null,
+    "draw_process_roi": false,
+    "min_lock_vehicle_conf": 0.7,
+    "min_lock_vehicle_width": 120,
+    "min_lock_vehicle_height": 90,
+    "min_lock_vehicle_area": 12000,
+    "min_lock_vehicle_area_ratio": 0.004,
+    "min_lock_candidate_score": 0.0,
+    "min_lock_obb_conf": 0.0,
+    "min_plate_obb_conf": 0.5,
+    "min_plate_area": 250.0,
+    "max_plate_area": 8000.0,
+    "max_rejected_per_track": 5,
+    "max_plate_vehicle_area_ratio": 0.04,
+    "min_plate_aspect": 2.0,
+    "max_plate_aspect": 6.0,
+    "min_plate_vehicle_overlap": 0.5,
+    "vehicle_box_pad_ratio": 0.2,
+    "vehicle_box_min_pad": 20,
+    "track_iou": 0.3,
+    "track_center_threshold": 0.45,
+    "track_max_age": 30,
+    "vehicle_detect_interval": 3,
+    "rk_adaptive": true,
+    "adaptive_unlocked_detect_interval": 1,
+    "adaptive_active_frames": 18,
+    "adaptive_predicted_min_votes": 2,
+    "adaptive_predicted_max_missing": 2,
+    "adaptive_min_exact_votes": 3,
+    "adaptive_min_strong_votes": 2,
+    "adaptive_min_vote_frames": 3,
+    "plate_on_predicted": false,
+    "plate_attempt_interval": 1,
+    "vote_window": 10,
+    "vote_threshold": 3,
+    "min_char_vote_ratio": 0.65,
+    "min_ocr_conf": 0.7,
+    "min_lock_text_len": 7,
+    "max_predict_frames": 12,
+    "max_unlocked_predict_frames": 2,
+    "max_locked_predict_frames": 4,
+    "cjk_font": "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+    "label_font_size": 28,
+    "progress_interval": 100,
+    "max_frames": 1000,
+    "start_frame": 0,
+    "save_video": false,
+    "publish_frame": null,
+    "publish_interval": 2,
+    "preview_jpeg_quality": 80
+  },
+  "stats": {
+    "vehicle_detection_frames": 342,
+    "vehicle_prediction_frames": 658,
+    "gated:vehicle confidence": 25,
+    "gated:vehicle dimensions": 8,
+    "vehicles_ready": 12,
+    "vehicles_ready_detected": 12,
+    "plate_attempts": 12,
+    "obb_candidates": 12,
+    "ocr:hyperlpr3": 12,
+    "accepted_candidates": 12,
+    "vehicle_detection_frames_adaptive": 8,
+    "frames_processed": 1000,
+    "start_frame": 0,
+    "elapsed_seconds": 78.62
+  },
+  "track_count": 2,
+  "tracks": {
+    "4": {
+      "track_id": 4,
+      "phase": "LOCKED",
+      "seen_frames": 22,
+      "plate_hits": 9,
+      "locked_text": "冀JC5210",
+      "locked_confidence": 1.0,
+      "locked_frame": 293,
+      "locked_consensus": {
+        "text": "冀JC5210",
+        "event_count": 3,
+        "total_window_events": 9,
+        "exact_count": 3,
+        "strong_count": 3,
+        "distinct_frames": [
+          287,
+          292,
+          293
+        ],
+        "mean_confidence": 0.9485967953999838,
+        "mean_position_ratio": 1.0,
+        "min_position_ratio": 1.0,
+        "lock_strategy": "rk_adaptive_exact_text"
+      },
+      "lock_deferred_reason": "exact text votes",
+      "lock_attempts": 9,
+      "plate_anchor": {
+        "x1": 0.2583540081977844,
+        "y1": 0.7803767919540405,
+        "x2": 0.46460020542144775,
+        "y2": 0.8702463507652283
+      },
+      "locked_plate_anchor": {
+        "x1": 0.2583540081977844,
+        "y1": 0.7803767919540405,
+        "x2": 0.46460020542144775,
+        "y2": 0.8702463507652283
+      },
+      "motion_model": "kalman_box_cv_with_plate_anchor",
+      "kalman_state": {
+        "cx_cy_w_h": [
+          451.174,
+          879.547,
+          259.699,
+          209.545
+        ],
+        "vx_vy_vw_vh": [
+          -11.123,
+          12.979,
+          6.791,
+          5.846
+        ]
+      },
+      "last_box": [
+        312,
+        778,
+        578,
+        994
+      ],
+      "last_detection_frame": 301,
+      "last_plate_attempt_frame": 293,
+      "plate_attempts": 9,
+      "vote_history": [
+        "辽153R10",
+        "冀JE5210",
+        "冀JC5210",
+        "冀JCS218",
+        "冀JCS218",
+        "辽AC5216",
+        "冀JC521G",
+        "冀JC5210",
+        "冀JC5210"
+      ],
+      "vote_events": [
+        {
+          "frame_idx": 280,
+          "text": "辽153R10",
+          "confidence": 0.7093280553817749,
+          "source": "plate",
+          "predicted": false,
+          "vehicle_confidence": 0.66552734375,
+          "candidate_score": 0.5271278615583779,
+          "obb_confidence": 0.93994140625,
+          "weight": 0.5253529309390198
+        },
+        {
+          "frame_idx": 286,
+          "text": "冀JE5210",
+          "confidence": 0.8399600386619568,
+          "source": "plate",
+          "predicted": false,
+          "vehicle_confidence": 0.7763671875,
+          "candidate_score": 0.5509679679365747,
+          "obb_confidence": 0.9609375,
+          "weight": 0.6386533783050331
+        },
+        {
+          "frame_idx": 287,
+          "text": "冀JC5210",
+          "confidence": 0.8660148978233337,
+          "source": "plate",
+          "predicted": false,
+          "vehicle_confidence": 0.80126953125,
+          "candidate_score": 0.5571552029850779,
+          "obb_confidence": 0.9658203125,
+          "weight": 0.6627368073409414
+        },
+        {
+          "frame_idx": 288,
+          "text": "冀JCS218",
+          "confidence": 0.8716181516647339,
+          "source": "plate",
+          "predicted": false,
+          "vehicle_confidence": 0.80712890625,
+          "candidate_score": 0.5583709428594065,
+          "obb_confidence": 0.9609375,
+          "weight": 0.6658875089972838
+        },
+        {
+          "frame_idx": 289,
+          "text": "冀JCS218",
+          "confidence": 0.8698859810829163,
+          "source": "plate",
+          "predicted": false,
+          "vehicle_confidence": 0.8046875,
+          "candidate_score": 0.5585026190103425,
+          "obb_confidence": 0.9609375,
+          "weight": 0.6646203408579778
+        },
+        {
+          "frame_idx": 290,
+          "text": "辽AC5216",
+          "confidence": 0.8471431136131287,
+          "source": "plate",
+          "predicted": false,
+          "vehicle_confidence": 0.74169921875,
+          "candidate_score": 0.5622313770815005,
+          "obb_confidence": 0.95849609375,
+          "weight": 0.6479848609548835
+        },
+        {
+          "frame_idx": 291,
+          "text": "冀JC521G",
+          "confidence": 0.955146849155426,
+          "source": "plate",
+          "predicted": false,
+          "vehicle_confidence": 0.8447265625,
+          "candidate_score": 0.5662411301953609,
+          "obb_confidence": 0.9638671875,
+          "weight": 0.7344815561848695
+        },
+        {
+          "frame_idx": 292,
+          "text": "冀JC5210",
+          "confidence": 0.9915913343429565,
+          "source": "plate",
+          "predicted": false,
+          "vehicle_confidence": 0.72900390625,
+          "candidate_score": 0.5687975836812389,
+          "obb_confidence": 0.96337890625,
+          "weight": 0.7635610455495104
+        },
+        {
+          "frame_idx": 293,
+          "text": "冀JC5210",
+          "confidence": 0.9881841540336609,
+          "source": "plate",
+          "predicted": false,
+          "vehicle_confidence": 0.771484375,
+          "candidate_score": 0.5733910709706047,
+          "obb_confidence": 0.96923828125,
+          "weight": 0.7654429811805469
+        }
+      ],
+      "vote_counts": {
+        "辽153R10": 1,
+        "冀JE5210": 1,
+        "冀JC5210": 3,
+        "冀JCS218": 2,
+        "辽AC5216": 1,
+        "冀JC521G": 1
+      },
+      "rejected_reasons": {},
+      "rejected_count": 0,
+      "rejected_candidates": [],
+      "topk": 5,
+      "candidates": [
+        {
+          "rank": 1,
+          "frame_idx": 293,
+          "track_id": 4,
+          "score": 0.5733910709706047,
+          "subscores": {
+            "plate_area_score": 0.12290721854493022,
+            "sharpness_score": 0.6702112397981119,
+            "exposure_score": 0.9923177083333333,
+            "contrast_score": 0.8353868816544551,
+            "obb_score": 0.96923828125
+          },
+          "raw_metrics": {
+            "plate_area": 614.5360927246511,
+            "laplacian_variance": 101.54739747683206,
+            "gray_std": 53.464760425885125,
+            "clipped_ratio": 0.003841145833333333,
+            "obb_confidence": 0.96923828125
+          },
+          "geometry": {
+            "width": 42.61618423461914,
+            "height": 14.420251846313477,
+            "aspect": 2.9553009676120134,
+            "center_x": 508.82574462890625,
+            "center_y": 831.5257568359375,
+            "vehicle_overlap": 1.0
+          },
+          "vehicle_confidence": 0.771484375,
+          "vehicle_box_xyxy": [
+            434,
+            697,
+            641,
+            860
+          ],
+          "plate_corners_xy": [
+            [
+              487.5566711425781,
+              824.201416015625
+            ],
+            [
+              530.1722412109375,
+              824.4301147460938
+            ],
+            [
+              530.0948486328125,
+              838.8501586914062
+            ],
+            [
+              487.4792785644531,
+              838.6214599609375
+            ]
+          ],
+          "files": {
+            "full": "full_rank1.jpg",
+            "vehicle": "vehicle_rank1.jpg",
+            "plate": "plate_rank1.jpg"
+          },
+          "ocr": {
+            "text": "冀JC5210",
+            "confidence": 0.9881841540336609,
+            "engine": "hyperlpr3"
+          }
+        },
+        {
+          "rank": 2,
+          "frame_idx": 292,
+          "track_id": 4,
+          "score": 0.5687975836812389,
+          "subscores": {
+            "plate_area_score": 0.1119632567603141,
+            "sharpness_score": 0.6656021715043045,
+            "exposure_score": 0.9936197916666667,
+            "contrast_score": 0.8454893298883758,
+            "obb_score": 0.96337890625
+          },
+          "raw_metrics": {
+            "plate_area": 559.8162838015705,
+            "laplacian_variance": 98.33343124283687,
+            "gray_std": 54.11131711285605,
+            "clipped_ratio": 0.0031901041666666666,
+            "obb_confidence": 0.96337890625
+          },
+          "geometry": {
+            "width": 41.48320388793945,
+            "height": 13.495011329650879,
+            "aspect": 3.073965843718387,
+            "center_x": 521.373046875,
+            "center_y": 816.7691650390625,
+            "vehicle_overlap": 1.0
+          },
+          "vehicle_confidence": 0.72900390625,
+          "vehicle_box_xyxy": [
+            450,
+            686,
+            645,
+            843
+          ],
+          "plate_corners_xy": [
+            [
+              500.6211242675781,
+              810.053466796875
+            ],
+            [
+              542.104248046875,
+              809.9898071289062
+            ],
+            [
+              542.125,
+              823.4848022460938
+            ],
+            [
+              500.6418151855469,
+              823.5484619140625
+            ]
+          ],
+          "files": {
+            "full": "full_rank2.jpg",
+            "vehicle": "vehicle_rank2.jpg",
+            "plate": "plate_rank2.jpg"
+          },
+          "ocr": {
+            "text": "冀JC5210",
+            "confidence": 0.9915913343429565,
+            "engine": "hyperlpr3"
+          }
+        },
+        {
+          "rank": 3,
+          "frame_idx": 291,
+          "track_id": 4,
+          "score": 0.5662411301953609,
+          "subscores": {
+            "plate_area_score": 0.10931350704208016,
+            "sharpness_score": 0.665926881292675,
+            "exposure_score": 0.98828125,
+            "contrast_score": 0.8357443209283039,
+            "obb_score": 0.9638671875
+          },
+          "raw_metrics": {
+            "plate_area": 546.5675352104008,
+            "laplacian_variance": 98.55652007102965,
+            "gray_std": 53.48763653941145,
+            "clipped_ratio": 0.005859375,
+            "obb_confidence": 0.9638671875
+          },
+          "geometry": {
+            "width": 40.14350509643555,
+            "height": 13.615342140197754,
+            "aspect": 2.948402227654375,
+            "center_x": 532.84375,
+            "center_y": 803.5679931640625,
+            "vehicle_overlap": 1.0
+          },
+          "vehicle_confidence": 0.8447265625,
+          "vehicle_box_xyxy": [
+            463,
+            678,
+            652,
+            832
+          ],
+          "plate_corners_xy": [
+            [
+              512.7383422851562,
+              796.8603515625
+            ],
+            [
+              552.88134765625,
+              796.660400390625
+            ],
+            [
+              552.9491577148438,
+              810.2755737304688
+            ],
+            [
+              512.80615234375,
+              810.4755249023438
+            ]
+          ],
+          "files": {
+            "full": "full_rank3.jpg",
+            "vehicle": "vehicle_rank3.jpg",
+            "plate": "plate_rank3.jpg"
+          },
+          "ocr": {
+            "text": "冀JC521G",
+            "confidence": 0.955146849155426,
+            "engine": "hyperlpr3"
+          }
+        },
+        {
+          "rank": 4,
+          "frame_idx": 290,
+          "track_id": 4,
+          "score": 0.5622313770815005,
+          "subscores": {
+            "plate_area_score": 0.0980150287270546,
+            "sharpness_score": 0.6672373621511088,
+            "exposure_score": 0.9891276041666667,
+            "contrast_score": 0.8353615838169881,
+            "obb_score": 0.95849609375
+          },
+          "raw_metrics": {
+            "plate_area": 490.075143635273,
+            "laplacian_variance": 99.46197670830618,
+            "gray_std": 53.46314136428724,
+            "clipped_ratio": 0.0054361979166666664,
+            "obb_confidence": 0.95849609375
+          },
+          "geometry": {
+            "width": 38.249969482421875,
+            "height": 12.812431335449219,
+            "aspect": 2.9853794709980224,
+            "center_x": 553.796875,
+            "center_y": 778.25,
+            "vehicle_overlap": 1.0
+          },
+          "vehicle_confidence": 0.74169921875,
+          "vehicle_box_xyxy": [
+            487,
+            660,
+            670,
+            804
+          ],
+          "plate_corners_xy": [
+            [
+              534.61376953125,
+              772.02001953125
+            ],
+            [
+              572.8621215820312,
+              771.6680908203125
+            ],
+            [
+              572.97998046875,
+              784.47998046875
+            ],
+            [
+              534.7316284179688,
+              784.8319091796875
+            ]
+          ],
+          "files": {
+            "full": "full_rank4.jpg",
+            "vehicle": "vehicle_rank4.jpg",
+            "plate": "plate_rank4.jpg"
+          },
+          "ocr": {
+            "text": "辽AC5216",
+            "confidence": 0.8471431136131287,
+            "engine": "hyperlpr3"
+          }
+        },
+        {
+          "rank": 5,
+          "frame_idx": 289,
+          "track_id": 4,
+          "score": 0.5585026190103425,
+          "subscores": {
+            "plate_area_score": 0.08838871158212423,
+            "sharpness_score": 0.6674650622478417,
+            "exposure_score": 0.9889973958333333,
+            "contrast_score": 0.8288369190724646,
+            "obb_score": 0.9609375
+          },
+          "raw_metrics": {
+            "plate_area": 441.94355791062117,
+            "laplacian_variance": 99.62014024098715,
+            "gray_std": 53.045562820637734,
+            "clipped_ratio": 0.005501302083333334,
+            "obb_confidence": 0.9609375
+          },
+          "geometry": {
+            "width": 37.53239822387695,
+            "height": 11.774988174438477,
+            "aspect": 3.1874680184693087,
+            "center_x": 563.1507568359375,
+            "center_y": 766.550048828125,
+            "vehicle_overlap": 1.0
+          },
+          "vehicle_confidence": 0.8046875,
+          "vehicle_box_xyxy": [
+            498,
+            653,
+            675,
+            791
+          ],
+          "plate_corners_xy": [
+            [
+              544.302978515625,
+              760.9292602539062
+            ],
+            [
+              581.8316040039062,
+              760.39697265625
+            ],
+            [
+              581.9985961914062,
+              772.1707763671875
+            ],
+            [
+              544.469970703125,
+              772.7030639648438
+            ]
+          ],
+          "files": {
+            "full": "full_rank5.jpg",
+            "vehicle": "vehicle_rank5.jpg",
+            "plate": "plate_rank5.jpg"
+          },
+          "ocr": {
+            "text": "冀JCS218",
+            "confidence": 0.8698859810829163,
+            "engine": "hyperlpr3"
+          }
+        }
+      ]
+    },
+    "5": {
+      "track_id": 5,
+      "phase": "LOCKED",
+      "seen_frames": 13,
+      "plate_hits": 3,
+      "locked_text": "冀B6R9F9",
+      "locked_confidence": 1.0,
+      "locked_frame": 751,
+      "locked_consensus": {
+        "text": "冀B6R9F9",
+        "event_count": 3,
+        "total_window_events": 3,
+        "exact_count": 3,
+        "strong_count": 3,
+        "distinct_frames": [
+          745,
+          746,
+          751
+        ],
+        "mean_confidence": 0.9754056334495544,
+        "mean_position_ratio": 1.0,
+        "min_position_ratio": 1.0,
+        "lock_strategy": "rk_adaptive_exact_text"
+      },
+      "lock_deferred_reason": "exact text votes",
+      "lock_attempts": 3,
+      "plate_anchor": {
+        "x1": 0.5309131741523743,
+        "y1": 0.5538631677627563,
+        "x2": 0.7374238967895508,
+        "y2": 0.6437646150588989
+      },
+      "locked_plate_anchor": {
+        "x1": 0.5309131741523743,
+        "y1": 0.5538631677627563,
+        "x2": 0.7374238967895508,
+        "y2": 0.6437646150588989
+      },
+      "motion_model": "kalman_box_cv_with_plate_anchor",
+      "kalman_state": {
+        "cx_cy_w_h": [
+          1291.273,
+          790.047,
+          198.609,
+          167.044
+        ],
+        "vx_vy_vw_vh": [
+          -16.143,
+          -19.796,
+          -12.989,
+          -6.14
+        ]
+      },
+      "last_box": [
+        1196,
+        718,
+        1408,
+        884
+      ],
+      "last_detection_frame": 751,
+      "last_plate_attempt_frame": 751,
+      "plate_attempts": 3,
+      "vote_history": [
+        "冀B6R9F9",
+        "冀B6R9F9",
+        "冀B6R9F9"
+      ],
+      "vote_events": [
+        {
+          "frame_idx": 745,
+          "text": "冀B6R9F9",
+          "confidence": 0.9993158578872681,
+          "source": "plate",
+          "predicted": false,
+          "vehicle_confidence": 0.74365234375,
+          "candidate_score": 0.46236610361624336,
+          "obb_confidence": 0.96484375,
+          "weight": 0.7178387847679741
+        },
+        {
+          "frame_idx": 746,
+          "text": "冀B6R9F9",
+          "confidence": 0.9804175496101379,
+          "source": "plate",
+          "predicted": false,
+          "vehicle_confidence": 0.70166015625,
+          "candidate_score": 0.44310872493279463,
+          "obb_confidence": 0.9638671875,
+          "weight": 0.6946439404683491
+        },
+        {
+          "frame_idx": 751,
+          "text": "冀B6R9F9",
+          "confidence": 0.9464834928512573,
+          "source": "plate",
+          "predicted": false,
+          "vehicle_confidence": 0.701171875,
+          "candidate_score": 0.3877489924872517,
+          "obb_confidence": 0.95947265625,
+          "weight": 0.6434327776022364
+        }
+      ],
+      "vote_counts": {
+        "冀B6R9F9": 3
+      },
+      "rejected_reasons": {},
+      "rejected_count": 0,
+      "rejected_candidates": [],
+      "topk": 3,
+      "candidates": [
+        {
+          "rank": 1,
+          "frame_idx": 745,
+          "track_id": 5,
+          "score": 0.46236610361624336,
+          "subscores": {
+            "plate_area_score": 0.21804659455269576,
+            "sharpness_score": 0.5770950557586303,
+            "exposure_score": 0.33268229166666663,
+            "contrast_score": 0.6653456004521071,
+            "obb_score": 0.96484375
+          },
+          "raw_metrics": {
+            "plate_area": 1090.2329727634788,
+            "laplacian_variance": 52.8934109486474,
+            "gray_std": 42.582118428934855,
+            "clipped_ratio": 0.3336588541666667,
+            "obb_confidence": 0.96484375
+          },
+          "geometry": {
+            "width": 56.84764099121094,
+            "height": 19.178157806396484,
+            "aspect": 2.9641867360300145,
+            "center_x": 1442.229736328125,
+            "center_y": 961.84375,
+            "vehicle_overlap": 1.0
+          },
+          "vehicle_confidence": 0.74365234375,
+          "vehicle_box_xyxy": [
+            1258,
+            820,
+            1542,
+            1043
+          ],
+          "plate_corners_xy": [
+            [
+              1413.67626953125,
+              952.6478881835938
+            ],
+            [
+              1470.5184326171875,
+              951.86328125
+            ],
+            [
+              1470.783203125,
+              971.0396118164062
+            ],
+            [
+              1413.94091796875,
+              971.82421875
+            ]
+          ],
+          "files": {
+            "full": "full_rank1.jpg",
+            "vehicle": "vehicle_rank1.jpg",
+            "plate": "plate_rank1.jpg"
+          },
+          "ocr": {
+            "text": "冀B6R9F9",
+            "confidence": 0.9993158578872681,
+            "engine": "hyperlpr3"
+          }
+        },
+        {
+          "rank": 2,
+          "frame_idx": 746,
+          "track_id": 5,
+          "score": 0.44310872493279463,
+          "subscores": {
+            "plate_area_score": 0.18659811114668845,
+            "sharpness_score": 0.579372949420976,
+            "exposure_score": 0.2875651041666667,
+            "contrast_score": 0.6446601683016088,
+            "obb_score": 0.9638671875
+          },
+          "raw_metrics": {
+            "plate_area": 932.9905557334423,
+            "laplacian_variance": 53.748262515597865,
+            "gray_std": 41.25825077130296,
+            "clipped_ratio": 0.35621744791666665,
+            "obb_confidence": 0.9638671875
+          },
+          "geometry": {
+            "width": 51.76876449584961,
+            "height": 18.022268295288086,
+            "aspect": 2.872488837011961,
+            "center_x": 1398.3751220703125,
+            "center_y": 905.3331909179688,
+            "vehicle_overlap": 1.0
+          },
+          "vehicle_confidence": 0.70166015625,
+          "vehicle_box_xyxy": [
+            1238,
+            780,
+            1490,
+            975
+          ],
+          "plate_corners_xy": [
+            [
+              1372.398681640625,
+              896.5905151367188
+            ],
+            [
+              1424.1646728515625,
+              896.0545654296875
+            ],
+            [
+              1424.351318359375,
+              914.0758666992188
+            ],
+            [
+              1372.5853271484375,
+              914.61181640625
+            ]
+          ],
+          "files": {
+            "full": "full_rank2.jpg",
+            "vehicle": "vehicle_rank2.jpg",
+            "plate": "plate_rank2.jpg"
+          },
+          "ocr": {
+            "text": "冀B6R9F9",
+            "confidence": 0.9804175496101379,
+            "engine": "hyperlpr3"
+          }
+        },
+        {
+          "rank": 3,
+          "frame_idx": 751,
+          "track_id": 5,
+          "score": 0.3877489924872517,
+          "subscores": {
+            "plate_area_score": 0.12677823429852725,
+            "sharpness_score": 0.502588024005973,
+            "exposure_score": 0.265625,
+            "contrast_score": 0.5680918765597527,
+            "obb_score": 0.95947265625
+          },
+          "raw_metrics": {
+            "plate_area": 633.8911714926362,
+            "laplacian_variance": 31.20937028566997,
+            "gray_std": 36.35788009982417,
+            "clipped_ratio": 0.3671875,
+            "obb_confidence": 0.95947265625
+          },
+          "geometry": {
+            "width": 43.64845275878906,
+            "height": 14.522648811340332,
+            "aspect": 3.005543501451691,
+            "center_x": 1330.4437255859375,
+            "center_y": 817.4031372070312,
+            "vehicle_overlap": 1.0
+          },
+          "vehicle_confidence": 0.701171875,
+          "vehicle_box_xyxy": [
+            1196,
+            718,
+            1408,
+            884
+          ],
+          "plate_corners_xy": [
+            [
+              1308.687255859375,
+              809.9412841796875
+            ],
+            [
+              1352.3338623046875,
+              810.3428955078125
+            ],
+            [
+              1352.2001953125,
+              824.8649291992188
+            ],
+            [
+              1308.5535888671875,
+              824.4633178710938
+            ]
+          ],
+          "files": {
+            "full": "full_rank3.jpg",
+            "vehicle": "vehicle_rank3.jpg",
+            "plate": "plate_rank3.jpg"
+          },
+          "ocr": {
+            "text": "冀B6R9F9",
+            "confidence": 0.9464834928512573,
+            "engine": "hyperlpr3"
+          }
+        }
+      ]
+    }
+  },
+  "ignored_tracks": {}
+}

@@ -1,0 +1,102 @@
+{
+  "track_id": 5,
+  "locked_text": "PLATE",
+  "locked_frame": 745,
+  "locked_consensus": {
+    "source": "plate_detect",
+    "obb_confidence": 0.9619140625,
+    "candidate_score": 0.4616477938618399,
+    "plate_area": 1068.9356724768877
+  },
+  "plate_anchor": {
+    "x1": 0.5494371652603149,
+    "y1": 0.5860894322395325,
+    "x2": 0.7490440607070923,
+    "y2": 0.6744661331176758
+  },
+  "locked_plate_anchor": {
+    "x1": 0.5494371652603149,
+    "y1": 0.5860894322395325,
+    "x2": 0.7490440607070923,
+    "y2": 0.6744661331176758
+  },
+  "motion_model": "kalman_box_cv_with_plate_anchor",
+  "kalman_state": {
+    "cx_cy_w_h": [
+      1297.143,
+      793.582,
+      207.959,
+      161.785
+    ],
+    "vx_vy_vw_vh": [
+      -14.95,
+      -20.229,
+      -11.318,
+      -9.264
+    ]
+  },
+  "last_box": [
+    1196,
+    717,
+    1408,
+    883
+  ],
+  "last_detection_frame": 751,
+  "last_plate_attempt_frame": 745,
+  "plate_attempts": 1,
+  "plate_hits": 1,
+  "vote_history": [],
+  "vote_events": [],
+  "rejected_reasons": {},
+  "candidates": [
+    {
+      "frame_idx": 745,
+      "track_id": 5,
+      "score": 0.4616477938618399,
+      "subscores": {
+        "plate_area_score": 0.21378713449537753,
+        "sharpness_score": 0.5748599668450245,
+        "exposure_score": 0.3446614583333333,
+        "contrast_score": 0.6647368173495043,
+        "obb_score": 0.9619140625
+      },
+      "metrics": {
+        "plate_area": 1068.9356724768877,
+        "laplacian_variance": 52.06759845309788,
+        "gray_std": 42.543156310368275,
+        "clipped_ratio": 0.32766927083333336,
+        "obb_confidence": 0.9619140625
+      },
+      "obb_score": 0.9619140625,
+      "plate_area": 1068.9356724768877,
+      "corners": [
+        [
+          1414.0401611328125,
+          952.7991943359375
+        ],
+        [
+          1470.4161376953125,
+          951.8701171875
+        ],
+        [
+          1470.728515625,
+          970.8258056640625
+        ],
+        [
+          1414.3525390625,
+          971.7548828125
+        ]
+      ],
+      "vehicle_box": [
+        1258,
+        820,
+        1542,
+        1045
+      ],
+      "vehicle_conf": 0.7939453125,
+      "ocr_text": null,
+      "ocr_conf": 0.0,
+      "rank": 1
+    }
+  ]
+}

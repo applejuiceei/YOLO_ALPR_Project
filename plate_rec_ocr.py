@@ -67,8 +67,26 @@ class PlateRecONNX:
 
     @staticmethod
     def clean_plate_text(text: str) -> str:
-        text = text.strip().upper().replace(" ", "")
+        text = PlateRecONNX.repair_mojibake(text.strip().upper().replace(" ", ""))
         return re.sub(r"[^0-9A-Z\u4e00-\u9fff]", "", text)
+
+    @staticmethod
+    def repair_mojibake(text: str) -> str:
+        repaired: list[str] = []
+        index = 0
+        while index < len(text):
+            if index + 1 < len(text) and ord(text[index]) <= 255 and ord(text[index + 1]) <= 255:
+                try:
+                    decoded = bytes([ord(text[index]), ord(text[index + 1])]).decode("gbk")
+                    if "\u4e00" <= decoded <= "\u9fff":
+                        repaired.append(decoded)
+                        index += 2
+                        continue
+                except UnicodeDecodeError:
+                    pass
+            repaired.append(text[index])
+            index += 1
+        return "".join(repaired)
 
     @staticmethod
     def is_plate_like(text: str) -> bool:
@@ -118,4 +136,3 @@ class PlateRecONNX:
 
         confidence = float(np.mean(result_scores)) if result_scores else None
         return "".join(result), confidence
-

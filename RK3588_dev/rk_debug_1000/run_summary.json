@@ -1,0 +1,683 @@
+{
+  "stats": {
+    "vehicle_detection_frames": 1000,
+    "gated:vehicle confidence": 63,
+    "gated:vehicle dimensions": 21,
+    "vehicles_ready": 25,
+    "obb_candidates": 25,
+    "ocr:hyperlpr3": 25,
+    "accepted_candidates": 25,
+    "frames_processed": 1000,
+    "start_frame": 0,
+    "elapsed_seconds": 238.485
+  },
+  "tracks": {
+    "4": {
+      "track_id": 4,
+      "locked_text": null,
+      "locked_frame": null,
+      "locked_consensus": null,
+      "plate_anchor": {
+        "x1": 0.2372596114873886,
+        "y1": 0.8224489688873291,
+        "x2": 0.4363279938697815,
+        "y2": 0.9061389565467834
+      },
+      "locked_plate_anchor": null,
+      "motion_model": "kalman_box_cv_with_plate_anchor",
+      "kalman_state": {
+        "cx_cy_w_h": [
+          406.857,
+          927.112,
+          291.193,
+          231.627
+        ],
+        "vx_vy_vw_vh": [
+          -14.764,
+          16.619,
+          9.38,
+          7.474
+        ]
+      },
+      "last_box": [
+        238,
+        825,
+        540,
+        1068
+      ],
+      "last_detection_frame": 303,
+      "plate_hits": 21,
+      "vote_history": [
+        "冀JC5210",
+        "冀JC5210",
+        "冀JC5216",
+        "粤JC521G",
+        "粤JC521G",
+        "粤JC521G",
+        "粤JC521G",
+        "冀JC521G",
+        "冀JC521G",
+        "冀JC521G"
+      ],
+      "vote_events": [
+        {
+          "frame_idx": 294,
+          "text": "冀JC5210",
+          "confidence": 0.9901132583618164,
+          "weight": 0.7668059132034403
+        },
+        {
+          "frame_idx": 295,
+          "text": "冀JC5210",
+          "confidence": 0.9683240056037903,
+          "weight": 0.7520589906752815
+        },
+        {
+          "frame_idx": 296,
+          "text": "冀JC5216",
+          "confidence": 0.940337061882019,
+          "weight": 0.7313064166246068
+        },
+        {
+          "frame_idx": 297,
+          "text": "粤JC521G",
+          "confidence": 0.9342325925827026,
+          "weight": 0.7253894002895667
+        },
+        {
+          "frame_idx": 298,
+          "text": "粤JC521G",
+          "confidence": 0.9702941179275513,
+          "weight": 0.7549158947755915
+        },
+        {
+          "frame_idx": 299,
+          "text": "粤JC521G",
+          "confidence": 0.9824984669685364,
+          "weight": 0.7677549624182931
+        },
+        {
+          "frame_idx": 300,
+          "text": "粤JC521G",
+          "confidence": 0.9834398031234741,
+          "weight": 0.7683755102399964
+        },
+        {
+          "frame_idx": 301,
+          "text": "冀JC521G",
+          "confidence": 0.9105015993118286,
+          "weight": 0.7145025278533661
+        },
+        {
+          "frame_idx": 302,
+          "text": "冀JC521G",
+          "confidence": 0.9936483502388,
+          "weight": 0.794405553331129
+        },
+        {
+          "frame_idx": 303,
+          "text": "冀JC521G",
+          "confidence": 0.9959789514541626,
+          "weight": 0.7967206382492066
+        }
+      ],
+      "rejected_reasons": {},
+      "candidates": [
+        {
+          "frame_idx": 302,
+          "track_id": 4,
+          "score": 0.6287912446433387,
+          "subscores": {
+            "plate_area_score": 0.2124329161312431,
+            "sharpness_score": 0.7472859838666434,
+            "exposure_score": 0.9954427083333334,
+            "contrast_score": 0.8459963196241056,
+            "obb_score": 0.96337890625
+          },
+          "metrics": {
+            "plate_area": 1062.1645806562155,
+            "laplacian_variance": 173.65552624066672,
+            "gray_std": 54.14376445594276,
+            "clipped_ratio": 0.0022786458333333335,
+            "obb_confidence": 0.96337890625
+          },
+          "obb_score": 0.96337890625,
+          "plate_area": 1062.1645806562155,
+          "corners": [
+            [
+              333.9396057128906,
+              998.1426391601562
+            ],
+            [
+              391.0160827636719,
+              999.3681640625
+            ],
+            [
+              390.6166687011719,
+              1017.9691162109375
+            ],
+            [
+              333.5401916503906,
+              1016.7435302734375
+            ]
+          ],
+          "vehicle_box": [
+            250,
+            809,
+            560,
+            1042
+          ],
+          "vehicle_conf": 0.7451171875,
+          "ocr_text": "冀JC521G",
+          "ocr_conf": 0.9936483502388,
+          "rank": 1
+        },
+        {
+          "frame_idx": 303,
+          "track_id": 4,
+          "score": 0.6280958371281821,
+          "subscores": {
+            "plate_area_score": 0.22530740523040294,
+            "sharpness_score": 0.7322942269820771,
+            "exposure_score": 0.9915364583333334,
+            "contrast_score": 0.8428630532791784,
+            "obb_score": 0.96533203125
+          },
+          "metrics": {
+            "plate_area": 1126.5370261520147,
+            "laplacian_variance": 156.4709883785248,
+            "gray_std": 53.94323540986742,
+            "clipped_ratio": 0.004231770833333333,
+            "obb_confidence": 0.96533203125
+          },
+          "obb_score": 0.96533203125,
+          "plate_area": 1126.5370261520147,
+          "corners": [
+            [
+              310.11553955078125,
+              1024.8551025390625
+            ],
+            [
+              369.77105712890625,
+              1026.319091796875
+            ],
+            [
+              369.307861328125,
+              1045.1917724609375
+            ],
+            [
+              309.65240478515625,
+              1043.727783203125
+            ]
+          ],
+          "vehicle_box": [
+            238,
+            825,
+            540,
+            1068
+          ],
+          "vehicle_conf": 0.74072265625,
+          "ocr_text": "冀JC521G",
+          "ocr_conf": 0.9959789514541626,
+          "rank": 2
+        },
+        {
+          "frame_idx": 301,
+          "track_id": 4,
+          "score": 0.6007344665597169,
+          "subscores": {
+            "plate_area_score": 0.16856911620609463,
+            "sharpness_score": 0.7130985525382946,
+            "exposure_score": 0.9972005208333333,
+            "contrast_score": 0.8213188200109541,
+            "obb_score": 0.9609375
+          },
+          "metrics": {
+            "plate_area": 842.8455810304731,
+            "laplacian_variance": 136.91299743546378,
+            "gray_std": 52.564404480701064,
+            "clipped_ratio": 0.0013997395833333333,
+            "obb_confidence": 0.9609375
+          },
+          "obb_score": 0.9609375,
+          "plate_area": 842.8455810304731,
+          "corners": [
+            [
+              376.4161071777344,
+              950.9702758789062
+            ],
+            [
+              427.9998474121094,
+              951.4448852539062
+            ],
+            [
+              427.8495178222656,
+              967.7828979492188
+            ],
+            [
+              376.2657775878906,
+              967.3082275390625
+            ]
+          ],
+          "vehicle_box": [
+            312,
+            778,
+            578,
+            994
+          ],
+          "vehicle_conf": 0.701171875,
+          "ocr_text": "冀JC521G",
+          "ocr_conf": 0.9105015993118286,
+          "rank": 3
+        },
+        {
+          "frame_idx": 299,
+          "track_id": 4,
+          "score": 0.5935983180408766,
+          "subscores": {
+            "plate_area_score": 0.16432047675549985,
+            "sharpness_score": 0.6931365254686316,
+            "exposure_score": 0.998046875,
+            "contrast_score": 0.8229558416086213,
+            "obb_score": 0.96142578125
+          },
+          "metrics": {
+            "plate_area": 821.6023837774992,
+            "laplacian_variance": 119.14631395869785,
+            "gray_std": 52.669173862951766,
+            "clipped_ratio": 0.0009765625,
+            "obb_confidence": 0.96142578125
+          },
+          "obb_score": 0.96142578125,
+          "plate_area": 821.6023837774992,
+          "corners": [
+            [
+              395.81561279296875,
+              929.5271606445312
+            ],
+            [
+              446.140625,
+              929.5078735351562
+            ],
+            [
+              446.1468505859375,
+              945.8338012695312
+            ],
+            [
+              395.8218688964844,
+              945.8530883789062
+            ]
+          ],
+          "vehicle_box": [
+            333,
+            765,
+            585,
+            970
+          ],
+          "vehicle_conf": 0.8046875,
+          "ocr_text": "粤JC521G",
+          "ocr_conf": 0.9824984669685364,
+          "rank": 4
+        },
+        {
+          "frame_idx": 300,
+          "track_id": 4,
+          "score": 0.593359759296652,
+          "subscores": {
+            "plate_area_score": 0.16417910957559942,
+            "sharpness_score": 0.6925780220407385,
+            "exposure_score": 0.9983072916666667,
+            "contrast_score": 0.8223499245797066,
+            "obb_score": 0.96142578125
+          },
+          "metrics": {
+            "plate_area": 820.8955478779972,
+            "laplacian_variance": 118.68361506038242,
+            "gray_std": 52.63039517310122,
+            "clipped_ratio": 0.0008463541666666667,
+            "obb_confidence": 0.96142578125
+          },
+          "obb_score": 0.96142578125,
+          "plate_area": 820.8955478779972,
+          "corners": [
+            [
+              395.8187561035156,
+              929.5245361328125
+            ],
+            [
+              446.14373779296875,
+              929.5245361328125
+            ],
+            [
+              446.14373779296875,
+              945.83642578125
+            ],
+            [
+              395.8187561035156,
+              945.83642578125
+            ]
+          ],
+          "vehicle_box": [
+            333,
+            765,
+            585,
+            970
+          ],
+          "vehicle_conf": 0.8056640625,
+          "ocr_text": "粤JC521G",
+          "ocr_conf": 0.9834398031234741,
+          "rank": 5
+        }
+      ]
+    },
+    "5": {
+      "track_id": 5,
+      "locked_text": "冀B6R9F9",
+      "locked_frame": 746,
+      "locked_consensus": {
+        "text": "冀B6R9F9",
+        "event_count": 4,
+        "min_position_ratio": 1.0,
+        "mean_position_ratio": 1.0
+      },
+      "plate_anchor": {
+        "x1": 0.533328115940094,
+        "y1": 0.5951516032218933,
+        "x2": 0.7394893765449524,
+        "y2": 0.6903170347213745
+      },
+      "locked_plate_anchor": {
+        "x1": 0.533328115940094,
+        "y1": 0.5951516032218933,
+        "x2": 0.7394893765449524,
+        "y2": 0.6903170347213745
+      },
+      "motion_model": "kalman_box_cv_with_plate_anchor",
+      "kalman_state": {
+        "cx_cy_w_h": [
+          1219.107,
+          684.093,
+          151.289,
+          121.215
+        ],
+        "vx_vy_vw_vh": [
+          -11.498,
+          -15.833,
+          -8.466,
+          -6.3
+        ]
+      },
+      "last_box": [
+        1151,
+        640,
+        1318,
+        764
+      ],
+      "last_detection_frame": 758,
+      "plate_hits": 4,
+      "vote_history": [
+        "冀B6R9F9",
+        "冀B6R9F9",
+        "冀B6R9F9",
+        "冀B6R9F9"
+      ],
+      "vote_events": [
+        {
+          "frame_idx": 741,
+          "text": "冀B6R9F9",
+          "confidence": 0.9995719194412231,
+          "weight": 0.7537565158392097
+        },
+        {
+          "frame_idx": 744,
+          "text": "冀B6R9F9",
+          "confidence": 0.9993093609809875,
+          "weight": 0.717606231223381
+        },
+        {
+          "frame_idx": 745,
+          "text": "冀B6R9F9",
+          "confidence": 0.9993158578872681,
+          "weight": 0.7178387847679741
+        },
+        {
+          "frame_idx": 746,
+          "text": "冀B6R9F9",
+          "confidence": 0.9804175496101379,
+          "weight": 0.6946439404683491
+        }
+      ],
+      "rejected_reasons": {},
+      "candidates": [
+        {
+          "frame_idx": 741,
+          "track_id": 5,
+          "score": 0.5564166818399605,
+          "subscores": {
+            "plate_area_score": 0.2783826910853386,
+            "sharpness_score": 0.717767987366973,
+            "exposure_score": 0.33235677083333337,
+            "contrast_score": 1.0,
+            "obb_score": 0.93798828125
+          },
+          "metrics": {
+            "plate_area": 1391.913455426693,
+            "laplacian_variance": 141.434609424803,
+            "gray_std": 85.580075326155,
+            "clipped_ratio": 0.3338216145833333,
+            "obb_confidence": 0.93798828125
+          },
+          "obb_score": 0.93798828125,
+          "plate_area": 1391.913455426693,
+          "corners": [
+            [
+              1491.4345703125,
+              1060.488525390625
+            ],
+            [
+              1558.5009765625,
+              1058.4053955078125
+            ],
+            [
+              1559.14501953125,
+              1079.1396484375
+            ],
+            [
+              1492.07861328125,
+              1081.2227783203125
+            ]
+          ],
+          "vehicle_box": [
+            1303,
+            875,
+            1634,
+            1080
+          ],
+          "vehicle_conf": 0.78857421875,
+          "ocr_text": "冀B6R9F9",
+          "ocr_conf": 0.9995719194412231,
+          "rank": 1
+        },
+        {
+          "frame_idx": 745,
+          "track_id": 5,
+          "score": 0.46236610361624336,
+          "subscores": {
+            "plate_area_score": 0.21804659455269576,
+            "sharpness_score": 0.5770950557586303,
+            "exposure_score": 0.33268229166666663,
+            "contrast_score": 0.6653456004521071,
+            "obb_score": 0.96484375
+          },
+          "metrics": {
+            "plate_area": 1090.2329727634788,
+            "laplacian_variance": 52.8934109486474,
+            "gray_std": 42.582118428934855,
+            "clipped_ratio": 0.3336588541666667,
+            "obb_confidence": 0.96484375
+          },
+          "obb_score": 0.96484375,
+          "plate_area": 1090.2329727634788,
+          "corners": [
+            [
+              1413.67626953125,
+              952.6478881835938
+            ],
+            [
+              1470.5184326171875,
+              951.86328125
+            ],
+            [
+              1470.783203125,
+              971.0396118164062
+            ],
+            [
+              1413.94091796875,
+              971.82421875
+            ]
+          ],
+          "vehicle_box": [
+            1258,
+            820,
+            1542,
+            1043
+          ],
+          "vehicle_conf": 0.74365234375,
+          "ocr_text": "冀B6R9F9",
+          "ocr_conf": 0.9993158578872681,
+          "rank": 2
+        },
+        {
+          "frame_idx": 744,
+          "track_id": 5,
+          "score": 0.4622652407527956,
+          "subscores": {
+            "plate_area_score": 0.21838378660231827,
+            "sharpness_score": 0.5772515837123298,
+            "exposure_score": 0.3311848958333333,
+            "contrast_score": 0.6654215907828532,
+            "obb_score": 0.96435546875
+          },
+          "metrics": {
+            "plate_area": 1091.9189330115914,
+            "laplacian_variance": 52.951723521550505,
+            "gray_std": 42.58698181010261,
+            "clipped_ratio": 0.33440755208333334,
+            "obb_confidence": 0.96435546875
+          },
+          "obb_score": 0.96435546875,
+          "plate_area": 1091.9189330115914,
+          "corners": [
+            [
+              1413.68310546875,
+              952.6110229492188
+            ],
+            [
+              1470.52587890625,
+              951.8703002929688
+            ],
+            [
+              1470.7762451171875,
+              971.0764770507812
+            ],
+            [
+              1413.933349609375,
+              971.8171997070312
+            ]
+          ],
+          "vehicle_box": [
+            1258,
+            820,
+            1542,
+            1043
+          ],
+          "vehicle_conf": 0.74462890625,
+          "ocr_text": "冀B6R9F9",
+          "ocr_conf": 0.9993093609809875,
+          "rank": 3
+        },
+        {
+          "frame_idx": 746,
+          "track_id": 5,
+          "score": 0.44310872493279463,
+          "subscores": {
+            "plate_area_score": 0.18659811114668845,
+            "sharpness_score": 0.579372949420976,
+            "exposure_score": 0.2875651041666667,
+            "contrast_score": 0.6446601683016088,
+            "obb_score": 0.9638671875
+          },
+          "metrics": {
+            "plate_area": 932.9905557334423,
+            "laplacian_variance": 53.748262515597865,
+            "gray_std": 41.25825077130296,
+            "clipped_ratio": 0.35621744791666665,
+            "obb_confidence": 0.9638671875
+          },
+          "obb_score": 0.9638671875,
+          "plate_area": 932.9905557334423,
+          "corners": [
+            [
+              1372.398681640625,
+              896.5905151367188
+            ],
+            [
+              1424.1646728515625,
+              896.0545654296875
+            ],
+            [
+              1424.351318359375,
+              914.0758666992188
+            ],
+            [
+              1372.5853271484375,
+              914.61181640625
+            ]
+          ],
+          "vehicle_box": [
+            1238,
+            780,
+            1490,
+            975
+          ],
+          "vehicle_conf": 0.70166015625,
+          "ocr_text": "冀B6R9F9",
+          "ocr_conf": 0.9804175496101379,
+          "rank": 4
+        }
+      ]
+    }
+  },
+  "ignored_tracks": {
+    "1": {
+      "plate_hits": 0,
+      "rejected_reasons": {},
+      "reason": "no accepted Top-K candidate"
+    },
+    "2": {
+      "plate_hits": 0,
+      "rejected_reasons": {},
+      "reason": "no accepted Top-K candidate"
+    },
+    "3": {
+      "plate_hits": 0,
+      "rejected_reasons": {},
+      "reason": "no accepted Top-K candidate"
+    },
+    "6": {
+      "plate_hits": 0,
+      "rejected_reasons": {},
+      "reason": "no accepted Top-K candidate"
+    },
+    "7": {
+      "plate_hits": 0,
+      "rejected_reasons": {},
+      "reason": "no accepted Top-K candidate"
+    },
+    "8": {
+      "plate_hits": 0,
+      "rejected_reasons": {},
+      "reason": "no accepted Top-K candidate"
+    }
+  }
+}

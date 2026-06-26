@@ -1,0 +1,99 @@
+{
+  "track_id": 6,
+  "locked_text": null,
+  "locked_frame": null,
+  "locked_consensus": null,
+  "plate_anchor": {
+    "x1": 0.24794435501098633,
+    "y1": 0.8089433908462524,
+    "x2": 0.44997143745422363,
+    "y2": 0.8873182535171509
+  },
+  "locked_plate_anchor": null,
+  "motion_model": "kalman_box_cv_with_plate_anchor",
+  "kalman_state": {
+    "cx_cy_w_h": [
+      441.0,
+      885.0,
+      256.0,
+      214.0
+    ],
+    "vx_vy_vw_vh": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "last_box": [
+    313,
+    778,
+    569,
+    992
+  ],
+  "last_detection_frame": 301,
+  "plate_hits": 1,
+  "vote_history": [
+    "冀JC521G"
+  ],
+  "vote_events": [
+    {
+      "frame_idx": 301,
+      "text": "冀JC521G",
+      "confidence": 0.9016595482826233,
+      "weight": 0.7097002077004081
+    }
+  ],
+  "rejected_reasons": {},
+  "candidates": [
+    {
+      "frame_idx": 301,
+      "track_id": 6,
+      "score": 0.6027738839563234,
+      "subscores": {
+        "plate_area_score": 0.1705596346668899,
+        "sharpness_score": 0.7161875884899422,
+        "exposure_score": 0.9962239583333333,
+        "contrast_score": 0.8235259465092926,
+        "obb_score": 0.96435546875
+      },
+      "metrics": {
+        "plate_area": 852.7981733344495,
+        "laplacian_variance": 139.8878839609358,
+        "gray_std": 52.705660576594724,
+        "clipped_ratio": 0.0018880208333333333,
+        "obb_confidence": 0.96435546875
+      },
+      "obb_score": 0.96435546875,
+      "plate_area": 852.7981733344495,
+      "corners": [
+        [
+          376.4737548828125,
+          951.3711547851562
+        ],
+        [
+          428.11041259765625,
+          951.1138916015625
+        ],
+        [
+          428.19268798828125,
+          967.6288452148438
+        ],
+        [
+          376.5560302734375,
+          967.8861083984375
+        ]
+      ],
+      "vehicle_box": [
+        313,
+        778,
+        569,
+        992
+      ],
+      "vehicle_conf": 0.693359375,
+      "ocr_text": "冀JC521G",
+      "ocr_conf": 0.9016595482826233,
+      "rank": 1
+    }
+  ]
+}
