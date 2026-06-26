@@ -57,10 +57,75 @@ class TrackState:
     locked_text: str | None = None
     locked_frame: int | None = None
     locked_consensus: dict[str, Any] | None = None
+    plate_anchor: dict[str, float] | None = None
+    locked_plate_anchor: dict[str, float] | None = None
     last_box: list[int] | None = None
     last_detection_frame: int | None = None
     last_vehicle_conf: float = 0.0
     velocity_xyxy: list[float] = field(default_factory=lambda: [0.0, 0.0, 0.0, 0.0])
+    kalman: Any = field(default=None, repr=False)
+
+
+class BoxKalmanFilter:
+    """Constant-velocity Kalman filter over vehicle center, size, and their velocities."""
+
+    def __init__(self, box: list[int]) -> None:
+        cx, cy, width, height = self._xyxy_to_measurement(box)
+        self.x = np.array([[cx], [cy], [width], [height], [0.0], [0.0], [0.0], [0.0]], dtype=np.float32)
+        self.p = np.eye(8, dtype=np.float32) * 25.0
+        self.q = np.eye(8, dtype=np.float32) * 0.06
+        self.r = np.diag([16.0, 16.0, 25.0, 25.0]).astype(np.float32)
+        self.h = np.zeros((4, 8), dtype=np.float32)
+        self.h[0, 0] = self.h[1, 1] = self.h[2, 2] = self.h[3, 3] = 1.0
+
+    @staticmethod
+    def _xyxy_to_measurement(box: list[int]) -> tuple[float, float, float, float]:
+        x1, y1, x2, y2 = [float(value) for value in box]
+        width = max(1.0, x2 - x1)
+        height = max(1.0, y2 - y1)
+        return x1 + width * 0.5, y1 + height * 0.5, width, height
+
+    @staticmethod
+    def _transition(delta_frames: int) -> np.ndarray:
+        dt = float(max(1, delta_frames))
+        f = np.eye(8, dtype=np.float32)
+        for index in range(4):
+            f[index, index + 4] = dt
+        return f
+
+    def update(self, box: list[int], delta_frames: int) -> None:
+        f = self._transition(delta_frames)
+        self.x = f @ self.x
+        self.p = f @ self.p @ f.T + self.q * float(max(1, delta_frames))
+        z = np.array(self._xyxy_to_measurement(box), dtype=np.float32).reshape(4, 1)
+        innovation = z - self.h @ self.x
+        s = self.h @ self.p @ self.h.T + self.r
+        k = self.p @ self.h.T @ np.linalg.inv(s)
+        self.x = self.x + k @ innovation
+        self.p = (np.eye(8, dtype=np.float32) - k @ self.h) @ self.p
+
+    def predicted_box(self, delta_frames: int, frame_shape: tuple[int, int, int]) -> list[int] | None:
+        f = self._transition(delta_frames)
+        x = f @ self.x
+        cx, cy, width, height = [float(value) for value in x[:4, 0]]
+        if width < 2.0 or height < 2.0:
+            return None
+        h, w = frame_shape[:2]
+        x1 = int(round(cx - width * 0.5))
+        y1 = int(round(cy - height * 0.5))
+        x2 = int(round(cx + width * 0.5))
+        y2 = int(round(cy + height * 0.5))
+        x1 = max(0, min(w - 1, x1))
+        y1 = max(0, min(h - 1, y1))
+        x2 = max(x1 + 1, min(w, x2))
+        y2 = max(y1 + 1, min(h, y2))
+        return [x1, y1, x2, y2]
+
+    def snapshot(self) -> dict[str, list[float]]:
+        return {
+            "cx_cy_w_h": [round(float(value), 3) for value in self.x[:4, 0]],
+            "vx_vy_vw_vh": [round(float(value), 3) for value in self.x[4:, 0]],
+        }
 
 
 class RKNNRunner:
@@ -146,9 +211,10 @@ class V4L2CtlCapture:
 
 
 class SimpleIoUTracker:
-    def __init__(self, iou_threshold: float, max_age: int) -> None:
+    def __init__(self, iou_threshold: float, max_age: int, center_threshold: float = 0.70) -> None:
         self.iou_threshold = iou_threshold
         self.max_age = max_age
+        self.center_threshold = center_threshold
         self.next_id = 1
         self.tracks: dict[int, dict[str, Any]] = {}
 
@@ -160,13 +226,30 @@ class SimpleIoUTracker:
         union = max(0.0, a[2] - a[0]) * max(0.0, a[3] - a[1]) + max(0.0, b[2] - b[0]) * max(0.0, b[3] - b[1]) - inter
         return float(inter / union) if union > 0 else 0.0
 
+    @staticmethod
+    def center_affinity(a: np.ndarray, b: np.ndarray) -> float:
+        acx, acy = (a[0] + a[2]) * 0.5, (a[1] + a[3]) * 0.5
+        bcx, bcy = (b[0] + b[2]) * 0.5, (b[1] + b[3]) * 0.5
+        aw, ah = max(1.0, a[2] - a[0]), max(1.0, a[3] - a[1])
+        bw, bh = max(1.0, b[2] - b[0]), max(1.0, b[3] - b[1])
+        norm = max(20.0, 0.5 * (aw + ah + bw + bh))
+        distance = math.hypot(acx - bcx, acy - bcy)
+        scale_ratio = min(aw * ah, bw * bh) / max(aw * ah, bw * bh)
+        return max(0.0, 1.0 - distance / norm) * max(0.0, scale_ratio)
+
     def update(self, boxes: np.ndarray, confidences: np.ndarray, frame_idx: int) -> list[tuple[int, np.ndarray, float]]:
-        matches = [(tid, did, self.iou(track["box"], box)) for tid, track in self.tracks.items() for did, box in enumerate(boxes)]
+        matches = []
+        for tid, track in self.tracks.items():
+            for did, box in enumerate(boxes):
+                iou_score = self.iou(track["box"], box)
+                center_score = self.center_affinity(track["box"], box)
+                score = max(iou_score, 0.85 * center_score)
+                matches.append((tid, did, score, iou_score, center_score))
         assigned_tracks: set[int] = set()
         assigned_detections: set[int] = set()
-        for track_id, det_id, score in sorted(matches, key=lambda item: item[2], reverse=True):
-            if score < self.iou_threshold:
-                break
+        for track_id, det_id, score, iou_score, center_score in sorted(matches, key=lambda item: item[2], reverse=True):
+            if iou_score < self.iou_threshold and center_score < self.center_threshold:
+                continue
             if track_id in assigned_tracks or det_id in assigned_detections:
                 continue
             self.tracks[track_id] = {"box": boxes[det_id].astype(np.float32), "conf": float(confidences[det_id]), "last_seen": frame_idx}
@@ -183,7 +266,6 @@ class SimpleIoUTracker:
         for track_id in stale:
             del self.tracks[track_id]
         return [(track_id, self.tracks[track_id]["box"].copy(), self.tracks[track_id]["conf"]) for track_id in sorted(assigned_tracks)]
-
 
 def clamp01(value: float) -> float:
     return max(0.0, min(1.0, float(value)))
@@ -423,7 +505,26 @@ def decode_ocr(output: np.ndarray, dictionary: list[str]) -> tuple[str, float]:
 
 
 def clean_plate_text(text: str) -> str:
-    return "".join(char for char in text if char not in "-_.;:'\" ")
+    text = repair_mojibake(text.strip().upper().replace(" ", ""))
+    return "".join(char for char in text if char.isdigit() or ("A" <= char <= "Z") or "\u4e00" <= char <= "\u9fff")
+
+
+def repair_mojibake(text: str) -> str:
+    repaired: list[str] = []
+    index = 0
+    while index < len(text):
+        if index + 1 < len(text) and ord(text[index]) <= 255 and ord(text[index + 1]) <= 255:
+            try:
+                decoded = bytes([ord(text[index]), ord(text[index + 1])]).decode("gbk")
+                if "\u4e00" <= decoded <= "\u9fff":
+                    repaired.append(decoded)
+                    index += 2
+                    continue
+            except UnicodeDecodeError:
+                pass
+        repaired.append(text[index])
+        index += 1
+    return "".join(repaired)
 
 
 def build_hyperlpr3() -> Any:
@@ -450,6 +551,9 @@ def vehicle_ready(box: list[int], confidence: float, frame: np.ndarray, args: ar
     x1, y1, x2, y2 = box
     width, height = max(0, x2 - x1), max(0, y2 - y1)
     area = width * height
+    process_roi = resolve_process_roi(args, frame.shape)
+    if not box_center_in_roi(box, process_roi):
+        return False, "vehicle center outside process ROI"
     if confidence < args.min_process_vehicle_conf:
         return False, "vehicle confidence"
     if width < args.min_process_vehicle_width or height < args.min_process_vehicle_height:
@@ -458,6 +562,71 @@ def vehicle_ready(box: list[int], confidence: float, frame: np.ndarray, args: ar
         return False, "vehicle area"
     if area / float(frame.shape[0] * frame.shape[1]) < args.min_process_vehicle_area_ratio:
         return False, "vehicle area ratio"
+    return True, ""
+
+
+def resolve_process_roi(args: argparse.Namespace, frame_shape: tuple[int, int, int]) -> list[int] | None:
+    values = getattr(args, "process_roi", None)
+    if not values:
+        return None
+    frame_h, frame_w = frame_shape[:2]
+    x1, y1, x2, y2 = [float(value) for value in values]
+    if all(0.0 <= value <= 1.0 for value in (x1, y1, x2, y2)):
+        x1, x2 = x1 * frame_w, x2 * frame_w
+        y1, y2 = y1 * frame_h, y2 * frame_h
+    x1 = max(0, min(frame_w - 1, int(round(x1))))
+    y1 = max(0, min(frame_h - 1, int(round(y1))))
+    x2 = max(x1 + 1, min(frame_w, int(round(x2))))
+    y2 = max(y1 + 1, min(frame_h, int(round(y2))))
+    return [x1, y1, x2, y2]
+
+
+def box_center_in_roi(box: list[int], roi: list[int] | None) -> bool:
+    if roi is None:
+        return True
+    x1, y1, x2, y2 = box
+    rx1, ry1, rx2, ry2 = roi
+    cx = (x1 + x2) * 0.5
+    cy = (y1 + y2) * 0.5
+    return rx1 <= cx <= rx2 and ry1 <= cy <= ry2
+
+
+def draw_process_roi(frame: np.ndarray, roi: list[int] | None) -> None:
+    if roi is None:
+        return
+    x1, y1, x2, y2 = roi
+    cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 180, 0), 2)
+    cv2.putText(frame, "PROCESS ROI", (x1, max(24, y1 - 8)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 180, 0), 2, cv2.LINE_AA)
+
+
+def vehicle_ready_for_lock(
+    box: list[int],
+    confidence: float,
+    frame_shape: tuple[int, int, int],
+    args: argparse.Namespace,
+    candidate_score: float | None = None,
+    obb_conf: float | None = None,
+) -> tuple[bool, str]:
+    process_roi = resolve_process_roi(args, frame_shape)
+    if not box_center_in_roi(box, process_roi):
+        return False, "lock blocked outside process ROI"
+    x1, y1, x2, y2 = box
+    width, height = max(0, x2 - x1), max(0, y2 - y1)
+    area = width * height
+    frame_h, frame_w = frame_shape[:2]
+    area_ratio = area / max(1.0, float(frame_w * frame_h))
+    if confidence < args.min_lock_vehicle_conf:
+        return False, "lock vehicle confidence"
+    if width < args.min_lock_vehicle_width or height < args.min_lock_vehicle_height:
+        return False, "lock vehicle dimensions"
+    if area < args.min_lock_vehicle_area:
+        return False, "lock vehicle area"
+    if area_ratio < args.min_lock_vehicle_area_ratio:
+        return False, "lock vehicle area ratio"
+    if candidate_score is not None and candidate_score < args.min_lock_candidate_score:
+        return False, "lock candidate score"
+    if obb_conf is not None and obb_conf < args.min_lock_obb_conf:
+        return False, "lock OBB confidence"
     return True, ""
 
 
@@ -480,6 +649,11 @@ def filter_plate(points: np.ndarray, score: float, box: list[int], args: argpars
 
 def add_candidate(state: TrackState, candidate: Candidate, topk: int) -> None:
     state.plate_hits += 1
+    anchor = plate_anchor_from_corners(np.asarray(candidate.corners, dtype=np.float32), candidate.vehicle_box)
+    if anchor is not None:
+        state.plate_anchor = anchor
+        if state.locked_text and state.locked_plate_anchor is None:
+            state.locked_plate_anchor = anchor
     state.candidates.append(candidate)
     state.candidates.sort(key=lambda item: item.score, reverse=True)
     del state.candidates[topk:]
@@ -503,10 +677,26 @@ def consensus(events: deque[dict[str, Any]]) -> dict[str, Any] | None:
         char, weight = vote.most_common(1)[0]
         chars.append(char)
         ratios.append(float(weight / totals[index]) if totals[index] else 0.0)
-    return {"text": "".join(chars), "event_count": len(target_events), "min_position_ratio": min(ratios), "mean_position_ratio": float(np.mean(ratios))}
+    scored_ratios = ratios[1:] if len(ratios) >= 7 else ratios
+    return {
+        "text": "".join(chars),
+        "event_count": len(target_events),
+        "min_position_ratio": min(scored_ratios),
+        "mean_position_ratio": float(np.mean(scored_ratios)),
+        "province_position_ratio": ratios[0] if ratios else 0.0,
+        "all_position_ratios": ratios,
+    }
 
 
-def vote(state: TrackState, text: str, confidence: float, frame_idx: int, candidate: Candidate, args: argparse.Namespace) -> bool:
+def vote(
+    state: TrackState,
+    text: str,
+    confidence: float,
+    frame_idx: int,
+    candidate: Candidate,
+    args: argparse.Namespace,
+    frame_shape: tuple[int, int, int],
+) -> bool:
     if state.locked_text or len(text) < args.min_lock_text_len or confidence < args.min_ocr_conf:
         return False
     weight = confidence * (0.5 + 0.5 * candidate.score) * (0.5 + 0.5 * candidate.obb_score)
@@ -517,11 +707,63 @@ def vote(state: TrackState, text: str, confidence: float, frame_idx: int, candid
         state.vote_history.popleft()
     result = consensus(state.vote_events)
     if result and result["event_count"] >= args.vote_threshold and result["min_position_ratio"] >= args.min_char_vote_ratio:
+        lock_ready, lock_reason = vehicle_ready_for_lock(
+            candidate.vehicle_box,
+            candidate.vehicle_conf,
+            frame_shape,
+            args,
+            candidate_score=candidate.score,
+            obb_conf=candidate.obb_score,
+        )
+        if not lock_ready:
+            state.locked_consensus = {**result, "deferred_reason": lock_reason}
+            return False
         state.locked_text = result["text"]
         state.locked_frame = frame_idx
         state.locked_consensus = result
+        state.locked_plate_anchor = state.plate_anchor
         return True
     return False
+
+
+def plate_anchor_from_corners(corners: np.ndarray, vehicle_box: list[int]) -> dict[str, float] | None:
+    vx1, vy1, vx2, vy2 = [float(value) for value in vehicle_box]
+    vehicle_w = max(1.0, vx2 - vx1)
+    vehicle_h = max(1.0, vy2 - vy1)
+    if corners.size == 0:
+        return None
+    px1, py1 = corners.min(axis=0)
+    px2, py2 = corners.max(axis=0)
+    if px2 <= px1 or py2 <= py1:
+        return None
+    return {
+        "x1": float((px1 - vx1) / vehicle_w),
+        "y1": float((py1 - vy1) / vehicle_h),
+        "x2": float((px2 - vx1) / vehicle_w),
+        "y2": float((py2 - vy1) / vehicle_h),
+    }
+
+
+def box_from_plate_anchor(
+    anchor: dict[str, float] | None,
+    vehicle_box: list[int],
+    frame_shape: tuple[int, int, int],
+) -> list[int] | None:
+    if anchor is None:
+        return None
+    vx1, vy1, vx2, vy2 = [float(value) for value in vehicle_box]
+    vehicle_w = max(1.0, vx2 - vx1)
+    vehicle_h = max(1.0, vy2 - vy1)
+    h, w = frame_shape[:2]
+    x1 = int(round(vx1 + anchor["x1"] * vehicle_w))
+    y1 = int(round(vy1 + anchor["y1"] * vehicle_h))
+    x2 = int(round(vx1 + anchor["x2"] * vehicle_w))
+    y2 = int(round(vy1 + anchor["y2"] * vehicle_h))
+    x1 = max(0, min(w - 1, x1))
+    y1 = max(0, min(h - 1, y1))
+    x2 = max(x1 + 1, min(w, x2))
+    y2 = max(y1 + 1, min(h, y2))
+    return [x1, y1, x2, y2]
 
 
 def update_motion(state: TrackState, box: list[int], confidence: float, frame_idx: int) -> None:
@@ -529,6 +771,11 @@ def update_motion(state: TrackState, box: list[int], confidence: float, frame_id
         delta = max(1, frame_idx - state.last_detection_frame)
         measured = [(current - previous) / delta for current, previous in zip(box, state.last_box)]
         state.velocity_xyxy = [0.7 * old + 0.3 * new for old, new in zip(state.velocity_xyxy, measured)]
+        if state.kalman is None:
+            state.kalman = BoxKalmanFilter(state.last_box)
+        state.kalman.update(box, delta)
+    else:
+        state.kalman = BoxKalmanFilter(box)
     state.last_box = box.copy()
     state.last_detection_frame = frame_idx
     state.last_vehicle_conf = confidence
@@ -540,6 +787,10 @@ def predict_box(state: TrackState, frame_idx: int, shape: tuple[int, int, int], 
     missing = frame_idx - state.last_detection_frame
     if not 0 < missing <= max_frames:
         return None
+    if state.kalman is not None:
+        predicted = state.kalman.predicted_box(missing, shape)
+        if predicted is not None:
+            return predicted
     height, width = shape[:2]
     result = [int(round(value + velocity * missing)) for value, velocity in zip(state.last_box, state.velocity_xyxy)]
     result[0], result[2] = max(0, result[0]), min(width, result[2])
@@ -560,6 +811,9 @@ def draw_track(
         prefix = "PRED " if predicted else "LOCK "
         label = prefix + state.locked_text
         cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]), color, 2)
+        plate_box = box_from_plate_anchor(state.locked_plate_anchor or state.plate_anchor, box, frame.shape)
+        if plate_box is not None:
+            cv2.rectangle(frame, (plate_box[0], plate_box[1]), (plate_box[2], plate_box[3]), color, 2)
         renderer.draw(frame, label, (box[0], max(22, box[1] - 8)), color)
         return
     color = (255, 0, 0) if not predicted else (0, 165, 255)
@@ -577,6 +831,12 @@ def save_results(states: dict[int, TrackState], output_dir: Path, run_stats: dic
             "locked_text": state.locked_text,
             "locked_frame": state.locked_frame,
             "locked_consensus": state.locked_consensus,
+            "plate_anchor": state.plate_anchor,
+            "locked_plate_anchor": state.locked_plate_anchor,
+            "motion_model": "kalman_box_cv_with_plate_anchor",
+            "kalman_state": state.kalman.snapshot() if state.kalman is not None else None,
+            "last_box": state.last_box,
+            "last_detection_frame": state.last_detection_frame,
             "plate_hits": state.plate_hits,
             "vote_history": list(state.vote_history),
             "vote_events": list(state.vote_events),
@@ -634,6 +894,21 @@ def main() -> None:
     parser.add_argument("--min-process-vehicle-height", type=int, default=70)
     parser.add_argument("--min-process-vehicle-area", type=int, default=8000)
     parser.add_argument("--min-process-vehicle-area-ratio", type=float, default=0.003)
+    parser.add_argument(
+        "--process-roi",
+        type=float,
+        nargs=4,
+        metavar=("X1", "Y1", "X2", "Y2"),
+        help="Only process vehicles whose center falls inside this ROI. Values <=1 are treated as normalized frame coordinates.",
+    )
+    parser.add_argument("--draw-process-roi", action="store_true", help="Draw --process-roi on published/saved frames.")
+    parser.add_argument("--min-lock-vehicle-conf", type=float, default=0.70)
+    parser.add_argument("--min-lock-vehicle-width", type=int, default=120)
+    parser.add_argument("--min-lock-vehicle-height", type=int, default=90)
+    parser.add_argument("--min-lock-vehicle-area", type=int, default=12000)
+    parser.add_argument("--min-lock-vehicle-area-ratio", type=float, default=0.004)
+    parser.add_argument("--min-lock-candidate-score", type=float, default=0.0)
+    parser.add_argument("--min-lock-obb-conf", type=float, default=0.0)
     parser.add_argument("--min-plate-obb-conf", type=float, default=0.50)
     parser.add_argument("--min-plate-area", type=float, default=250.0)
     parser.add_argument("--max-plate-area", type=float, default=8000.0)
@@ -644,6 +919,7 @@ def main() -> None:
     parser.add_argument("--vehicle-box-pad-ratio", type=float, default=0.2)
     parser.add_argument("--vehicle-box-min-pad", type=int, default=20)
     parser.add_argument("--track-iou", type=float, default=0.3)
+    parser.add_argument("--track-center-threshold", type=float, default=0.70, help="Fallback center/scale matching threshold when IoU drops during fast scale changes.")
     parser.add_argument("--track-max-age", type=int, default=30)
     parser.add_argument("--vehicle-detect-interval", type=int, default=3, help="Run vehicle RKNN every N processed frames; intervening frames use box prediction.")
     parser.add_argument("--vote-window", type=int, default=10)
@@ -651,7 +927,9 @@ def main() -> None:
     parser.add_argument("--min-char-vote-ratio", type=float, default=0.65)
     parser.add_argument("--min-ocr-conf", type=float, default=0.50, help="RKNN CTC mean-character confidence threshold.")
     parser.add_argument("--min-lock-text-len", type=int, default=7)
-    parser.add_argument("--max-predict-frames", type=int, default=12)
+    parser.add_argument("--max-predict-frames", type=int, default=12, help="Legacy prediction limit kept for compatibility.")
+    parser.add_argument("--max-unlocked-predict-frames", type=int, default=2, help="Maximum prediction-only frames for unlocked tracks.")
+    parser.add_argument("--max-locked-predict-frames", type=int, default=4, help="Maximum prediction-only frames for locked tracks.")
     parser.add_argument("--cjk-font", type=Path, default=Path("/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc"), help="TrueType/TTC font used for Chinese locked-plate labels.")
     parser.add_argument("--label-font-size", type=int, default=28)
     parser.add_argument("--progress-interval", type=int, default=100)
@@ -664,6 +942,10 @@ def main() -> None:
     args = parser.parse_args()
     if args.vehicle_detect_interval <= 0:
         raise ValueError("--vehicle-detect-interval must be positive")
+    if args.max_unlocked_predict_frames < 0 or args.max_locked_predict_frames < 0:
+        raise ValueError("prediction frame limits must be non-negative")
+    if args.process_roi and (args.process_roi[2] <= args.process_roi[0] or args.process_roi[3] <= args.process_roi[1]):
+        raise ValueError("--process-roi must be X1 Y1 X2 Y2 with X2 > X1 and Y2 > Y1")
     if not 1 <= args.preview_jpeg_quality <= 100:
         raise ValueError("--preview-jpeg-quality must be between 1 and 100")
 
@@ -674,7 +956,7 @@ def main() -> None:
     plate_model = RKNNRunner(args.plate_model, "plate_obb")
     ocr_model = RKNNRunner(args.ocr_model, "plate_rec") if args.ocr_engine == "rknn" else None
     hyperlpr3 = build_hyperlpr3() if args.ocr_engine == "hyperlpr3" else None
-    tracker = SimpleIoUTracker(args.track_iou, args.track_max_age)
+    tracker = SimpleIoUTracker(args.track_iou, args.track_max_age, args.track_center_threshold)
     states: dict[int, TrackState] = {}
     label_renderer = PlateLabelRenderer(args.cjk_font, args.label_font_size)
     mipi_width, mipi_height = 0, 0
@@ -728,6 +1010,9 @@ def main() -> None:
             frame_idx += 1
             processed_frames += 1
             raw_frame = frame.copy()
+            process_roi = resolve_process_roi(args, frame.shape)
+            if args.draw_process_roi:
+                draw_process_roi(frame, process_roi)
             detect_vehicle_now = processed_frames == 1 or (processed_frames - 1) % args.vehicle_detect_interval == 0
             tracked: list[tuple[int, np.ndarray, float, bool]] = []
             if detect_vehicle_now:
@@ -737,15 +1022,16 @@ def main() -> None:
                 run_stats["vehicle_detection_frames"] += 1
             else:
                 for track_id, state in states.items():
-                    predicted = predict_box(state, frame_idx, frame.shape, args.max_predict_frames)
+                    max_predict_frames = args.max_locked_predict_frames if state.locked_text else args.max_unlocked_predict_frames
+                    predicted = predict_box(state, frame_idx, frame.shape, max_predict_frames)
                     if predicted:
                         tracked.append((track_id, np.asarray(predicted, dtype=np.float32), state.last_vehicle_conf, True))
                 run_stats["vehicle_prediction_frames"] += 1
             seen_ids: set[int] = set()
             plate_hits = 0
             for track_id, tracked_box, vehicle_conf, is_predicted in tracked:
-                seen_ids.add(track_id)
                 box = [int(round(value)) for value in tracked_box]
+                seen_ids.add(track_id)
                 state = states.setdefault(track_id, TrackState())
                 if not is_predicted:
                     update_motion(state, box, float(vehicle_conf), frame_idx)
@@ -788,7 +1074,7 @@ def main() -> None:
                             add_candidate(state, candidate, args.topk)
                             run_stats["accepted_candidates"] += 1
                             plate_hits += 1
-                            if text and vote(state, text, ocr_conf, frame_idx, candidate, args):
+                            if text and vote(state, text, ocr_conf, frame_idx, candidate, args, raw_frame.shape):
                                 print(f"[LOCK] track={track_id} plate={state.locked_text} frame={frame_idx} events={state.locked_consensus['event_count']}", flush=True)
                             cv2.polylines(frame, [corners.astype(np.int32)], True, (0, 255, 255), 2)
                             break
@@ -797,7 +1083,7 @@ def main() -> None:
                 draw_track(frame, box, track_id, state, label_renderer)
             for track_id, state in states.items():
                 if track_id not in seen_ids and state.locked_text:
-                    predicted = predict_box(state, frame_idx, frame.shape, args.max_predict_frames)
+                    predicted = predict_box(state, frame_idx, frame.shape, args.max_locked_predict_frames)
                     if predicted:
                         draw_track(frame, predicted, track_id, state, label_renderer, predicted=True)
             elapsed = max(1e-6, time.perf_counter() - started)
