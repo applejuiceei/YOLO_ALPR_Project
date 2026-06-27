@@ -1,0 +1,183 @@
+{
+  "created_at": "2026-06-27T14:23:35",
+  "args": {
+    "video": "D:\\YOLO_ALPR_Project\\测试图\\14.mp4",
+    "output": "D:\\YOLO_ALPR_Project\\captures_deblur_bg_vote_full",
+    "vehicle_model": "D:\\YOLO_ALPR_Project\\yolo11n.pt",
+    "plate_model": "D:\\YOLO_ALPR_Project\\best_obb.pt",
+    "topk": 5,
+    "vehicle_conf": 0.55,
+    "plate_conf": 0.25,
+    "vehicle_imgsz": 640,
+    "plate_imgsz": 320,
+    "with_ocr": false,
+    "ocr_engine": "hyperlpr3",
+    "live_ocr": true,
+    "deblur_model": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\plate_restore_lite_v2_e20_320x96.onnx",
+    "deblur_mode": "always",
+    "deblur_min_ocr_conf": 0.82,
+    "deblur_min_gain": 0.02,
+    "deblur_eval_all_plates": true,
+    "vote_window": 10,
+    "vote_threshold": 3,
+    "min_char_vote_ratio": 0.65,
+    "min_ocr_conf": 0.7,
+    "min_lock_text_len": 7,
+    "skip_locked_detection": true,
+    "max_predict_frames": 12,
+    "max_frames": 0,
+    "progress_interval": 100,
+    "tracker": "iou",
+    "ultralytics_tracker": "bytetrack.yaml",
+    "track_iou": 0.3,
+    "track_max_age": 30,
+    "min_process_vehicle_conf": 0.65,
+    "min_process_vehicle_width": 90,
+    "min_process_vehicle_height": 70,
+    "min_process_vehicle_area": 8000,
+    "min_process_vehicle_area_ratio": 0.003,
+    "min_plate_obb_conf": 0.5,
+    "min_plate_area": 250.0,
+    "max_plate_area": 8000.0,
+    "max_rejected_per_track": 5,
+    "max_plate_vehicle_area_ratio": 0.04,
+    "min_plate_aspect": 2.0,
+    "max_plate_aspect": 6.0,
+    "require_plate_in_vehicle": true,
+    "vehicle_box_pad_ratio": 0.2,
+    "vehicle_box_min_pad": 20.0,
+    "min_plate_vehicle_overlap": 0.5,
+    "show_rejected": false,
+    "show_waiting": false,
+    "show_window": true,
+    "display_width": 1280,
+    "display_height": 720
+  },
+  "video": {
+    "path": "D:\\YOLO_ALPR_Project\\测试图\\14.mp4",
+    "width": 1920,
+    "height": 1080,
+    "fps": 24.0,
+    "frame_count": 6971,
+    "deblur_stats": {
+      "plate_ocr_with_deblur_checks": 8,
+      "deblur_attempts": 8,
+      "deblur_elapsed_ms_total": 2203
+    }
+  },
+  "track_count": 1,
+  "tracks": [
+    {
+      "track_id": 2,
+      "seen_frames": 80,
+      "plate_hits": 8,
+      "best_score": 0.5418926860849473,
+      "best_frame_idx": 229,
+      "locked_text": "冀JC5216",
+      "locked_confidence": 0.9551429761706652,
+      "locked_frame": 233,
+      "locked_consensus": {
+        "text": "冀JC5216",
+        "target_length": 7,
+        "event_count": 3,
+        "total_weight": 1.8574693935849353,
+        "min_position_ratio": 0.6860008331946562,
+        "mean_position_ratio": 0.9551429761706652,
+        "positions": [
+          {
+            "index": 0,
+            "char": "冀",
+            "weight": 1.2742255516328385,
+            "total_weight": 1.8574693935849353,
+            "ratio": 0.6860008331946562
+          },
+          {
+            "index": 1,
+            "char": "J",
+            "weight": 1.8574693935849353,
+            "total_weight": 1.8574693935849353,
+            "ratio": 1.0
+          },
+          {
+            "index": 2,
+            "char": "C",
+            "weight": 1.8574693935849353,
+            "total_weight": 1.8574693935849353,
+            "ratio": 1.0
+          },
+          {
+            "index": 3,
+            "char": "5",
+            "weight": 1.8574693935849353,
+            "total_weight": 1.8574693935849353,
+            "ratio": 1.0
+          },
+          {
+            "index": 4,
+            "char": "2",
+            "weight": 1.8574693935849353,
+            "total_weight": 1.8574693935849353,
+            "ratio": 1.0
+          },
+          {
+            "index": 5,
+            "char": "1",
+            "weight": 1.8574693935849353,
+            "total_weight": 1.8574693935849353,
+            "ratio": 1.0
+          },
+          {
+            "index": 6,
+            "char": "6",
+            "weight": 1.8574693935849353,
+            "total_weight": 1.8574693935849353,
+            "ratio": 1.0
+          }
+        ]
+      },
+      "vote_history": [
+        "京JC5216",
+        "冀JC5216",
+        "冀JC5216"
+      ],
+      "vote_events": [
+        {
+          "frame_idx": 229,
+          "text": "京JC5216",
+          "confidence": 0.8471344709396362,
+          "source": "vehicle",
+          "vehicle_confidence": 0.6884902715682983,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.5832438419520969
+        },
+        {
+          "frame_idx": 231,
+          "text": "冀JC5216",
+          "confidence": 0.8612988591194153,
+          "source": "vehicle",
+          "vehicle_confidence": 0.706595242023468,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.6085896758140201
+        },
+        {
+          "frame_idx": 233,
+          "text": "冀JC5216",
+          "confidence": 0.9033035039901733,
+          "source": "plate",
+          "vehicle_confidence": 0.7750043869018555,
+          "candidate_score": 0.5341417601460494,
+          "obb_confidence": 0.9213103652000427,
+          "weight": 0.6656358758188184
+        }
+      ],
+      "vote_counts": {
+        "京JC5216": 1,
+        "冀JC5216": 2
+      },
+      "rejected_count": 5,
+      "dir": "D:\\YOLO_ALPR_Project\\captures_deblur_bg_vote_full\\run_20260627_142216\\track_2"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "track_id": 12,
+  "seen_frames": 77,
+  "plate_hits": 0,
+  "locked_text": null,
+  "locked_confidence": null,
+  "locked_frame": null,
+  "locked_consensus": null,
+  "vote_history": [],
+  "vote_events": [],
+  "vote_counts": {},
+  "topk": 0,
+  "candidates": [],
+  "rejected_count": 2,
+  "rejected_candidates": [
+    {
+      "rank": 1,
+      "frame_idx": 3919,
+      "track_id": 12,
+      "reason": "plate OBB confidence 0.32 < 0.5",
+      "obb_score": 0.31566673517227173,
+      "plate_area": 10531.1875,
+      "geometry": {
+        "width": 150.01253509521484,
+        "height": 70.20231628417969,
+        "aspect": 2.1368601925891246,
+        "center_x": 316.97796630859375,
+        "center_y": 796.4650268554688,
+        "vehicle_overlap": 1.0
+      },
+      "vehicle_confidence": 0.875320553779602,
+      "vehicle_box_xyxy": [
+        0,
+        476,
+        424,
+        963
+      ],
+      "plate_corners_xy": [
+        [
+          399.74853515625,
+          793.8069458007812
+        ],
+        [
+          367.96710205078125,
+          731.2105712890625
+        ],
+        [
+          234.20741271972656,
+          799.123046875
+        ],
+        [
+          265.98883056640625,
+          861.7194213867188
+        ]
+      ],
+      "files": {
+        "full": "rejected/full_reject1.jpg",
+        "vehicle": "rejected/vehicle_reject1.jpg",
+        "plate": "rejected/plate_reject1.jpg"
+      }
+    },
+    {
+      "rank": 2,
+      "frame_idx": 3923,
+      "track_id": 12,
+      "reason": "plate OBB confidence 0.27 < 0.5",
+      "obb_score": 0.2727605998516083,
+      "plate_area": 15355.0,
+      "geometry": {
+        "width": 188.55437469482422,
+        "height": 81.43557739257812,
+        "aspect": 2.3153808290184568,
+        "center_x": 266.6717834472656,
+        "center_y": 838.222900390625,
+        "vehicle_overlap": 1.0
+      },
+      "vehicle_confidence": 0.8986316919326782,
+      "vehicle_box_xyxy": [
+        1,
+        488,
+        384,
+        1029
+      ],
+      "plate_corners_xy": [
+        [
+          369.1247863769531,
+          831.1861572265625
+        ],
+        [
+          331.7891540527344,
+          758.8134765625
+        ],
+        [
+          164.21881103515625,
+          845.2595825195312
+        ],
+        [
+          201.55441284179688,
+          917.6322631835938
+        ]
+      ],
+      "files": {
+        "full": "rejected/full_reject2.jpg",
+        "vehicle": "rejected/vehicle_reject2.jpg",
+        "plate": "rejected/plate_reject2.jpg"
+      }
+    }
+  ]
+}

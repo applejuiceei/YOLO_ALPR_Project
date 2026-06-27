@@ -1,0 +1,98 @@
+[
+  {
+    "input": "D:\\YOLO_ALPR_Project\\RK3588_dev\\run_20260626_074232\\plate_contact_sheet.jpg",
+    "restored": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\restored\\plate_contact_sheet_deblur.jpg",
+    "comparison": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\comparison\\plate_contact_sheet_comparison.jpg",
+    "original_text": "鲁V0JU10",
+    "original_confidence": 0.981508731842041,
+    "original_plate_like": true,
+    "deblur_text": null,
+    "deblur_confidence": null,
+    "deblur_plate_like": false,
+    "changed": true
+  },
+  {
+    "input": "D:\\YOLO_ALPR_Project\\RK3588_dev\\run_20260626_074232\\track_10\\full_rank1.jpg",
+    "restored": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\restored\\track_10__full_rank1_deblur.jpg",
+    "comparison": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\comparison\\track_10__full_rank1_comparison.jpg",
+    "original_text": "冀B6R9F9",
+    "original_confidence": 0.9958572387695312,
+    "original_plate_like": true,
+    "deblur_text": null,
+    "deblur_confidence": null,
+    "deblur_plate_like": false,
+    "changed": true
+  },
+  {
+    "input": "D:\\YOLO_ALPR_Project\\RK3588_dev\\run_20260626_074232\\track_10\\full_rank2.jpg",
+    "restored": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\restored\\track_10__full_rank2_deblur.jpg",
+    "comparison": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\comparison\\track_10__full_rank2_comparison.jpg",
+    "original_text": "冀B6R9F9",
+    "original_confidence": 0.9748579859733582,
+    "original_plate_like": true,
+    "deblur_text": null,
+    "deblur_confidence": null,
+    "deblur_plate_like": false,
+    "changed": true
+  },
+  {
+    "input": "D:\\YOLO_ALPR_Project\\RK3588_dev\\run_20260626_074232\\track_10\\full_rank3.jpg",
+    "restored": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\restored\\track_10__full_rank3_deblur.jpg",
+    "comparison": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\comparison\\track_10__full_rank3_comparison.jpg",
+    "original_text": "晋D6R9E9",
+    "original_confidence": 0.7216062545776367,
+    "original_plate_like": true,
+    "deblur_text": null,
+    "deblur_confidence": null,
+    "deblur_plate_like": false,
+    "changed": true
+  },
+  {
+    "input": "D:\\YOLO_ALPR_Project\\RK3588_dev\\run_20260626_074232\\track_10\\plate_rank1.jpg",
+    "restored": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\restored\\track_10__plate_rank1_deblur.jpg",
+    "comparison": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\comparison\\track_10__plate_rank1_comparison.jpg",
+    "original_text": "冀B6R9F9",
+    "original_confidence": 0.9993224143981934,
+    "original_plate_like": true,
+    "deblur_text": "冀B6R9F9",
+    "deblur_confidence": 0.9944392442703247,
+    "deblur_plate_like": true,
+    "changed": false
+  },
+  {
+    "input": "D:\\YOLO_ALPR_Project\\RK3588_dev\\run_20260626_074232\\track_10\\plate_rank2.jpg",
+    "restored": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\restored\\track_10__plate_rank2_deblur.jpg",
+    "comparison": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\comparison\\track_10__plate_rank2_comparison.jpg",
+    "original_text": "冀B6R9F9",
+    "original_confidence": 0.9730618596076965,
+    "original_plate_like": true,
+    "deblur_text": "冀B6R9F9",
+    "deblur_confidence": 0.9486232399940491,
+    "deblur_plate_like": true,
+    "changed": false
+  },
+  {
+    "input": "D:\\YOLO_ALPR_Project\\RK3588_dev\\run_20260626_074232\\track_10\\plate_rank3.jpg",
+    "restored": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\restored\\track_10__plate_rank3_deblur.jpg",
+    "comparison": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\comparison\\track_10__plate_rank3_comparison.jpg",
+    "original_text": "黑B6R9F9",
+    "original_confidence": 0.9724422693252563,
+    "original_plate_like": true,
+    "deblur_text": "黑B6R9F9",
+    "deblur_confidence": 0.9959222674369812,
+    "deblur_plate_like": true,
+    "changed": false
+  },
+  {
+    "input": "D:\\YOLO_ALPR_Project\\RK3588_dev\\run_20260626_074232\\track_10\\vehicle_rank1.jpg",
+    "restored": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\restored\\track_10__vehicle_rank1_deblur.jpg",
+    "comparison": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\static_hyperlpr3_test_probe\\comparison\\track_10__vehicle_rank1_comparison.jpg",
+    "original_text": "冀B6R9F9",
+    "original_confidence": 0.9995908737182617,
+    "original_plate_like": true,
+    "deblur_text": null,
+    "deblur_confidence": null,
+    "deblur_plate_like": false,
+    "changed": true
+  }
+]

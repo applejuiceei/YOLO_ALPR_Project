@@ -1,0 +1,106 @@
+{
+  "track_id": 15,
+  "seen_frames": 2,
+  "plate_hits": 1,
+  "locked_text": null,
+  "locked_confidence": null,
+  "locked_frame": null,
+  "locked_consensus": null,
+  "vote_history": [
+    "冀CEJ509"
+  ],
+  "vote_events": [
+    {
+      "frame_idx": 6789,
+      "text": "冀CEJ509",
+      "confidence": 0.9956517815589905,
+      "source": "vehicle",
+      "vehicle_confidence": 0.8798823356628418,
+      "candidate_score": null,
+      "obb_confidence": null,
+      "weight": 0.8760564150649941
+    }
+  ],
+  "vote_counts": {
+    "冀CEJ509": 1
+  },
+  "topk": 1,
+  "candidates": [
+    {
+      "rank": 1,
+      "frame_idx": 6789,
+      "track_id": 15,
+      "score": 0.5892749356755822,
+      "subscores": {
+        "plate_area_score": 0.28545,
+        "sharpness_score": 0.6039596000806504,
+        "exposure_score": 0.8795572916666666,
+        "contrast_score": 0.7922046613379365,
+        "obb_score": 0.9702549576759338
+      },
+      "raw_metrics": {
+        "plate_area": 1427.25,
+        "laplacian_variance": 63.88450047704908,
+        "gray_std": 50.70109832562794,
+        "clipped_ratio": 0.060221354166666664,
+        "obb_confidence": 0.9702549576759338
+      },
+      "geometry": {
+        "width": 60.47893142700195,
+        "height": 23.601238250732422,
+        "aspect": 2.5625321343097367,
+        "center_x": 1887.319580078125,
+        "center_y": 1024.576904296875,
+        "vehicle_overlap": 0.996839077619523
+      },
+      "vehicle_confidence": 0.8798823356628418,
+      "vehicle_box_xyxy": [
+        1643,
+        818,
+        1918,
+        1077
+      ],
+      "plate_corners_xy": [
+        [
+          1918.1951904296875,
+          1034.595947265625
+        ],
+        [
+          1916.8203125,
+          1011.0347900390625
+        ],
+        [
+          1856.444091796875,
+          1014.5579833984375
+        ],
+        [
+          1857.8189697265625,
+          1038.119140625
+        ]
+      ],
+      "files": {
+        "full": "full_rank1.jpg",
+        "vehicle": "vehicle_rank1.jpg",
+        "plate": "plate_rank1.jpg"
+      },
+      "ocr": {
+        "text": "冀CEJ509",
+        "confidence": 0.9956517815589905,
+        "engine": "hyperlpr3"
+      },
+      "deblur": {
+        "ocr": {
+          "text": "鲁CEJ509",
+          "confidence": 0.8524351119995117,
+          "engine": "hyperlpr3"
+        },
+        "used_for_vote": false,
+        "files": {
+          "plate": "plate_deblur_rank1.jpg"
+        }
+      }
+    }
+  ],
+  "rejected_count": 0,
+  "rejected_candidates": []
+}

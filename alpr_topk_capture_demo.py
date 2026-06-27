@@ -3,6 +3,7 @@ import json
 import math
 import os
 import site
+import time
 from collections import Counter, deque
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -59,6 +60,10 @@ class Candidate:
     ocr_raw_text: str | None = None
     ocr_raw_conf: float | None = None
     ocr_engine: str | None = None
+    deblur_plate_crop: np.ndarray | None = None
+    deblur_ocr_text: str | None = None
+    deblur_ocr_conf: float | None = None
+    deblur_used_for_vote: bool = False
 
 
 @dataclass
@@ -561,6 +566,100 @@ def build_ocr_engine(engine: str) -> tuple[Any, Any, Any, bool]:
     return ocr, recognize, is_plate_like, use_vehicle_first
 
 
+class PlateDeblurONNX:
+    def __init__(self, model_path: str | Path) -> None:
+        try:
+            import onnxruntime as ort
+        except Exception as exc:
+            raise RuntimeError(
+                "Deblur needs onnxruntime, but it could not be loaded. "
+                "Install/fix onnxruntime before using --deblur-model."
+            ) from exc
+
+        self.model_path = Path(model_path)
+        if not self.model_path.exists():
+            raise FileNotFoundError(f"Deblur model not found: {self.model_path}")
+        self.session = ort.InferenceSession(str(self.model_path), providers=["CPUExecutionProvider"])
+        self.input_name = self.session.get_inputs()[0].name
+        shape = self.session.get_inputs()[0].shape
+        self.channels_first = len(shape) == 4 and (shape[1] == 3 or isinstance(shape[1], str))
+        if self.channels_first:
+            self.height = int(shape[2]) if isinstance(shape[2], int) else PLATE_HEIGHT
+            self.width = int(shape[3]) if isinstance(shape[3], int) else PLATE_WIDTH
+        else:
+            self.height = int(shape[1]) if len(shape) > 2 and isinstance(shape[1], int) else PLATE_HEIGHT
+            self.width = int(shape[2]) if len(shape) > 2 and isinstance(shape[2], int) else PLATE_WIDTH
+
+    def restore(self, plate_bgr: np.ndarray) -> np.ndarray:
+        if plate_bgr.size == 0:
+            return plate_bgr
+        resized = cv2.resize(plate_bgr, (self.width, self.height), interpolation=cv2.INTER_CUBIC)
+        rgb = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
+        if self.channels_first:
+            tensor = np.transpose(rgb, (2, 0, 1))[None, ...]
+        else:
+            tensor = rgb[None, ...]
+        output = self.session.run(None, {self.input_name: tensor})[0]
+        restored = np.asarray(output)
+        if restored.ndim == 4:
+            restored = restored[0]
+        if restored.ndim == 3 and restored.shape[0] == 3:
+            restored = np.transpose(restored, (1, 2, 0))
+        restored = np.clip(restored, 0.0, 1.0)
+        restored_bgr = cv2.cvtColor((restored * 255.0).astype(np.uint8), cv2.COLOR_RGB2BGR)
+        return cv2.resize(restored_bgr, (plate_bgr.shape[1], plate_bgr.shape[0]), interpolation=cv2.INTER_CUBIC)
+
+
+def should_try_deblur(text: str | None, confidence: float | None, args: argparse.Namespace) -> bool:
+    if getattr(args, "deblur_mode", "fallback") == "always":
+        return True
+    if not text:
+        return True
+    if confidence is None:
+        return True
+    return confidence < args.deblur_min_ocr_conf
+
+
+def recognize_with_optional_deblur(
+    recognize: Any,
+    plate_crop: np.ndarray,
+    deblur_model: PlateDeblurONNX | None,
+    args: argparse.Namespace,
+    is_plate_like: Any = None,
+) -> dict[str, Any]:
+    started = time.perf_counter()
+    text, confidence = recognize(plate_crop)
+    result: dict[str, Any] = {
+        "original_text": text,
+        "original_confidence": confidence,
+        "text": text,
+        "confidence": confidence,
+        "source": "original",
+        "deblur_crop": None,
+        "deblur_text": None,
+        "deblur_confidence": None,
+        "deblur_elapsed_ms": 0.0,
+    }
+    if deblur_model is None or not should_try_deblur(text, confidence, args):
+        return result
+    deblur_started = time.perf_counter()
+    restored = deblur_model.restore(plate_crop)
+    deblur_text, deblur_confidence = recognize(restored)
+    result["deblur_crop"] = restored
+    result["deblur_text"] = deblur_text
+    result["deblur_confidence"] = deblur_confidence
+    result["deblur_elapsed_ms"] = round((time.perf_counter() - deblur_started) * 1000.0, 3)
+    original_conf = float(confidence) if confidence is not None else -1.0
+    restored_conf = float(deblur_confidence) if deblur_confidence is not None else -1.0
+    deblur_plate_like = bool(deblur_text) and (is_plate_like is None or is_plate_like(deblur_text))
+    if deblur_text and deblur_plate_like and (not text or restored_conf >= original_conf + args.deblur_min_gain):
+        result["text"] = deblur_text
+        result["confidence"] = deblur_confidence
+        result["source"] = "deblur"
+    result["elapsed_ms"] = round((time.perf_counter() - started) * 1000.0, 3)
+    return result
+
+
 def build_weighted_consensus(events: deque[dict[str, Any]]) -> dict[str, Any] | None:
     if not events:
         return None
@@ -781,6 +880,18 @@ def candidate_summary(candidate: Candidate, rank: int) -> dict[str, Any]:
             "confidence": candidate.ocr_raw_conf,
             "engine": candidate.ocr_engine,
         }
+    if candidate.deblur_plate_crop is not None:
+        data["deblur"] = {
+            "ocr": {
+                "text": candidate.deblur_ocr_text,
+                "confidence": candidate.deblur_ocr_conf,
+                "engine": candidate.ocr_engine,
+            },
+            "used_for_vote": candidate.deblur_used_for_vote,
+            "files": {
+                "plate": f"plate_deblur_rank{rank}.jpg",
+            },
+        }
     return data
 
 
@@ -821,6 +932,8 @@ def save_outputs(states: dict[int, TrackState], run_dir: Path, args: argparse.Na
             cv2.imwrite(str(track_dir / f"full_rank{rank}.jpg"), candidate.full_frame)
             cv2.imwrite(str(track_dir / f"vehicle_rank{rank}.jpg"), candidate.vehicle_crop)
             cv2.imwrite(str(track_dir / f"plate_rank{rank}.jpg"), candidate.plate_crop)
+            if candidate.deblur_plate_crop is not None:
+                cv2.imwrite(str(track_dir / f"plate_deblur_rank{rank}.jpg"), candidate.deblur_plate_crop)
             summaries.append(candidate_summary(candidate, rank))
 
         rejected_summaries = []
@@ -916,6 +1029,8 @@ def run_topk_capture(args: argparse.Namespace) -> Path:
     live_recognize = None
     live_is_plate_like = None
     live_use_vehicle_first = False
+    deblur_model = None
+    deblur_stats: Counter[str] = Counter()
     if args.live_ocr:
         print(f"Loading {args.ocr_engine} for live OCR voting...")
         try:
@@ -923,6 +1038,11 @@ def run_topk_capture(args: argparse.Namespace) -> Path:
         except Exception as exc:
             print(f"WARNING: Live OCR could not be initialized. Continuing without live OCR. Error: {exc}")
             live_recognize = None
+    if args.deblur_model:
+        if live_recognize is None:
+            raise RuntimeError("--deblur-model requires --live-ocr so OCR can compare original and deblurred plate crops.")
+        print(f"Loading plate deblur model: {args.deblur_model}")
+        deblur_model = PlateDeblurONNX(args.deblur_model)
     window_name = "Top-K ALPR Capture"
     if args.show_window:
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
@@ -1029,6 +1149,13 @@ def run_topk_capture(args: argparse.Namespace) -> Path:
 
                     ocr_text = None
                     ocr_conf = None
+                    deblur_plate_crop = None
+                    deblur_ocr_text = None
+                    deblur_ocr_conf = None
+                    deblur_vote_text = None
+                    deblur_vote_conf = None
+                    deblur_used_for_vote = False
+                    deblur_vote_recorded = False
                     ocr_vote_recorded = False
                     if live_recognize is not None and live_use_vehicle_first:
                         try:
@@ -1122,9 +1249,34 @@ def run_topk_capture(args: argparse.Namespace) -> Path:
                         continue
 
                     score, subscores, raw_metrics = score_plate(plate_crop, plate_area, obb_score)
-                    if live_recognize is not None and (not live_use_vehicle_first or not ocr_text):
+                    should_run_plate_ocr = live_recognize is not None and (
+                        not live_use_vehicle_first
+                        or not ocr_text
+                        or (deblur_model is not None and args.deblur_eval_all_plates)
+                    )
+                    if should_run_plate_ocr:
                         try:
-                            ocr_text, ocr_conf = live_recognize(plate_crop)
+                            if deblur_model is None:
+                                plate_ocr_text, plate_ocr_conf = live_recognize(plate_crop)
+                                if not ocr_text:
+                                    ocr_text, ocr_conf = plate_ocr_text, plate_ocr_conf
+                            else:
+                                deblur_stats["plate_ocr_with_deblur_checks"] += 1
+                                result = recognize_with_optional_deblur(live_recognize, plate_crop, deblur_model, args, live_is_plate_like)
+                                plate_ocr_text = result["original_text"]
+                                plate_ocr_conf = result["original_confidence"]
+                                deblur_plate_crop = result["deblur_crop"]
+                                deblur_ocr_text = result["deblur_text"]
+                                deblur_ocr_conf = result["deblur_confidence"]
+                                if deblur_plate_crop is not None:
+                                    deblur_stats["deblur_attempts"] += 1
+                                    deblur_stats["deblur_elapsed_ms_total"] += int(round(float(result.get("deblur_elapsed_ms") or 0.0)))
+                                if result["source"] == "deblur":
+                                    deblur_stats["deblur_used"] += 1
+                                    deblur_vote_text = result["text"]
+                                    deblur_vote_conf = result["confidence"]
+                                if not ocr_text:
+                                    ocr_text, ocr_conf = plate_ocr_text, plate_ocr_conf
                         except Exception as exc:
                             print(f"WARNING: live plate OCR failed at frame {frame_idx}, track {track_id}: {exc}")
 
@@ -1158,6 +1310,27 @@ def run_topk_capture(args: argparse.Namespace) -> Path:
                                 draw_plate_label(display_frame, vehicle_box, state.locked_text, locked=True)
                             elif not locked_now:
                                 draw_plate_label(display_frame, vehicle_box, ocr_text, locked=False)
+                        if (
+                            deblur_vote_text
+                            and not ocr_vote_recorded
+                            and (live_is_plate_like is None or live_is_plate_like(deblur_vote_text))
+                        ):
+                            deblur_locked_now = add_vote(
+                                state,
+                                deblur_vote_text,
+                                deblur_vote_conf,
+                                frame_idx,
+                                args,
+                                source="deblur_plate",
+                                vehicle_conf=vehicle_conf,
+                                candidate_score=score,
+                                obb_conf=obb_score,
+                            )
+                            deblur_vote_recorded = True
+                            deblur_used_for_vote = True
+                            deblur_stats["deblur_votes"] += 1
+                            if deblur_locked_now:
+                                print(lock_log_message(track_id, state, frame_idx) + " source=deblur")
                     elif ocr_text and not ocr_vote_recorded and (live_is_plate_like is None or live_is_plate_like(ocr_text)):
                         locked_now = add_vote(
                             state,
@@ -1173,6 +1346,28 @@ def run_topk_capture(args: argparse.Namespace) -> Path:
                         ocr_vote_recorded = True
                         if locked_now:
                             print(lock_log_message(track_id, state, frame_idx))
+                    if (
+                        display_frame is None
+                        and deblur_vote_text
+                        and not ocr_vote_recorded
+                        and (live_is_plate_like is None or live_is_plate_like(deblur_vote_text))
+                    ):
+                        deblur_locked_now = add_vote(
+                            state,
+                            deblur_vote_text,
+                            deblur_vote_conf,
+                            frame_idx,
+                            args,
+                            source="deblur_plate",
+                            vehicle_conf=vehicle_conf,
+                            candidate_score=score,
+                            obb_conf=obb_score,
+                        )
+                        deblur_vote_recorded = True
+                        deblur_used_for_vote = True
+                        deblur_stats["deblur_votes"] += 1
+                        if deblur_locked_now:
+                            print(lock_log_message(track_id, state, frame_idx) + " source=deblur")
 
                     candidate = Candidate(
                         frame_idx=frame_idx,
@@ -1192,6 +1387,10 @@ def run_topk_capture(args: argparse.Namespace) -> Path:
                         ocr_raw_text=ocr_text if ocr_text and live_is_plate_like is not None and not live_is_plate_like(ocr_text) else None,
                         ocr_raw_conf=ocr_conf if ocr_text and live_is_plate_like is not None and not live_is_plate_like(ocr_text) else None,
                         ocr_engine=args.ocr_engine if ocr_text else None,
+                        deblur_plate_crop=deblur_plate_crop,
+                        deblur_ocr_text=deblur_ocr_text,
+                        deblur_ocr_conf=deblur_ocr_conf,
+                        deblur_used_for_vote=deblur_used_for_vote,
                     )
                     add_candidate(states, candidate, args.topk)
                     total_plate_hits += 1
@@ -1261,6 +1460,7 @@ def run_topk_capture(args: argparse.Namespace) -> Path:
     if args.with_ocr:
         run_ocr_for_saved_candidates(states, args.ocr_engine)
 
+    video_meta["deblur_stats"] = dict(deblur_stats)
     save_outputs(states, run_dir, args, video_meta)
     print(f"Saved Top-K capture run: {run_dir}")
     return run_dir
@@ -1288,6 +1488,21 @@ def build_arg_parser() -> argparse.ArgumentParser:
         "--live-ocr",
         action="store_true",
         help="Run the selected OCR engine during processing, vote by track, and draw live text in preview.",
+    )
+    parser.add_argument("--deblur-model", default="", help="Optional ONNX plate deblur model used by the demo OCR experiment path.")
+    parser.add_argument(
+        "--deblur-mode",
+        choices=["fallback", "always"],
+        default="fallback",
+        help="fallback runs deblur only when original plate OCR is missing/low-confidence; always runs it for every plate crop OCR.",
+    )
+    parser.add_argument("--deblur-min-ocr-conf", type=float, default=0.82, help="Original OCR confidence below this value triggers fallback deblur.")
+    parser.add_argument("--deblur-min-gain", type=float, default=0.02, help="Minimum confidence gain required before deblur OCR replaces original OCR.")
+    parser.add_argument(
+        "--deblur-eval-all-plates",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="When using vehicle-first OCR engines, still OCR accepted plate crops so deblur A/B data is saved.",
     )
     parser.add_argument("--vote-window", type=int, default=10, help="Maximum recent OCR texts kept for each track vote.")
     parser.add_argument("--vote-threshold", type=int, default=3, help="Minimum valid OCR events needed before weighted character consensus can lock.")

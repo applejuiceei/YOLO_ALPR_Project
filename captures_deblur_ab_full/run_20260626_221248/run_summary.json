@@ -1,0 +1,672 @@
+{
+  "created_at": "2026-06-26T22:21:58",
+  "args": {
+    "video": "D:\\YOLO_ALPR_Project\\测试图\\14.mp4",
+    "output": "D:\\YOLO_ALPR_Project\\captures_deblur_ab_full",
+    "vehicle_model": "D:\\YOLO_ALPR_Project\\yolo11n.pt",
+    "plate_model": "D:\\YOLO_ALPR_Project\\best_obb.pt",
+    "topk": 5,
+    "vehicle_conf": 0.55,
+    "plate_conf": 0.25,
+    "vehicle_imgsz": 640,
+    "plate_imgsz": 320,
+    "with_ocr": false,
+    "ocr_engine": "hyperlpr3",
+    "live_ocr": true,
+    "deblur_model": "D:\\YOLO_ALPR_Project\\blur models\\deblur_v2_e20\\plate_restore_lite_v2_e20_320x96.onnx",
+    "deblur_mode": "always",
+    "deblur_min_ocr_conf": 0.82,
+    "deblur_min_gain": 0.02,
+    "deblur_eval_all_plates": true,
+    "vote_window": 10,
+    "vote_threshold": 3,
+    "min_char_vote_ratio": 0.65,
+    "min_ocr_conf": 0.7,
+    "min_lock_text_len": 7,
+    "skip_locked_detection": true,
+    "max_predict_frames": 12,
+    "max_frames": 0,
+    "progress_interval": 500,
+    "tracker": "iou",
+    "ultralytics_tracker": "bytetrack.yaml",
+    "track_iou": 0.3,
+    "track_max_age": 30,
+    "min_process_vehicle_conf": 0.65,
+    "min_process_vehicle_width": 90,
+    "min_process_vehicle_height": 70,
+    "min_process_vehicle_area": 8000,
+    "min_process_vehicle_area_ratio": 0.003,
+    "min_plate_obb_conf": 0.5,
+    "min_plate_area": 250.0,
+    "max_plate_area": 8000.0,
+    "max_rejected_per_track": 5,
+    "max_plate_vehicle_area_ratio": 0.04,
+    "min_plate_aspect": 2.0,
+    "max_plate_aspect": 6.0,
+    "require_plate_in_vehicle": true,
+    "vehicle_box_pad_ratio": 0.2,
+    "vehicle_box_min_pad": 20.0,
+    "min_plate_vehicle_overlap": 0.5,
+    "show_rejected": false,
+    "show_waiting": false,
+    "show_window": false,
+    "display_width": 1280,
+    "display_height": 720
+  },
+  "video": {
+    "path": "D:\\YOLO_ALPR_Project\\测试图\\14.mp4",
+    "width": 1920,
+    "height": 1080,
+    "fps": 24.0,
+    "frame_count": 6971,
+    "deblur_stats": {
+      "plate_ocr_with_deblur_checks": 27,
+      "deblur_attempts": 19,
+      "deblur_elapsed_ms_total": 5887,
+      "deblur_used": 7
+    }
+  },
+  "track_count": 8,
+  "tracks": [
+    {
+      "track_id": 2,
+      "seen_frames": 80,
+      "plate_hits": 8,
+      "best_score": 0.5418926860849473,
+      "best_frame_idx": 229,
+      "locked_text": "冀JC5216",
+      "locked_confidence": 0.9551429761706652,
+      "locked_frame": 233,
+      "locked_consensus": {
+        "text": "冀JC5216",
+        "target_length": 7,
+        "event_count": 3,
+        "total_weight": 1.8574693935849353,
+        "min_position_ratio": 0.6860008331946562,
+        "mean_position_ratio": 0.9551429761706652,
+        "positions": [
+          {
+            "index": 0,
+            "char": "冀",
+            "weight": 1.2742255516328385,
+            "total_weight": 1.8574693935849353,
+            "ratio": 0.6860008331946562
+          },
+          {
+            "index": 1,
+            "char": "J",
+            "weight": 1.8574693935849353,
+            "total_weight": 1.8574693935849353,
+            "ratio": 1.0
+          },
+          {
+            "index": 2,
+            "char": "C",
+            "weight": 1.8574693935849353,
+            "total_weight": 1.8574693935849353,
+            "ratio": 1.0
+          },
+          {
+            "index": 3,
+            "char": "5",
+            "weight": 1.8574693935849353,
+            "total_weight": 1.8574693935849353,
+            "ratio": 1.0
+          },
+          {
+            "index": 4,
+            "char": "2",
+            "weight": 1.8574693935849353,
+            "total_weight": 1.8574693935849353,
+            "ratio": 1.0
+          },
+          {
+            "index": 5,
+            "char": "1",
+            "weight": 1.8574693935849353,
+            "total_weight": 1.8574693935849353,
+            "ratio": 1.0
+          },
+          {
+            "index": 6,
+            "char": "6",
+            "weight": 1.8574693935849353,
+            "total_weight": 1.8574693935849353,
+            "ratio": 1.0
+          }
+        ]
+      },
+      "vote_history": [
+        "京JC5216",
+        "冀JC5216",
+        "冀JC5216"
+      ],
+      "vote_events": [
+        {
+          "frame_idx": 229,
+          "text": "京JC5216",
+          "confidence": 0.8471344709396362,
+          "source": "vehicle",
+          "vehicle_confidence": 0.6884902715682983,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.5832438419520969
+        },
+        {
+          "frame_idx": 231,
+          "text": "冀JC5216",
+          "confidence": 0.8612988591194153,
+          "source": "vehicle",
+          "vehicle_confidence": 0.706595242023468,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.6085896758140201
+        },
+        {
+          "frame_idx": 233,
+          "text": "冀JC5216",
+          "confidence": 0.9033035039901733,
+          "source": "plate",
+          "vehicle_confidence": 0.7750043869018555,
+          "candidate_score": 0.5341417601460494,
+          "obb_confidence": 0.9213103652000427,
+          "weight": 0.6656358758188184
+        }
+      ],
+      "vote_counts": {
+        "京JC5216": 1,
+        "冀JC5216": 2
+      },
+      "rejected_count": 5,
+      "dir": "D:\\YOLO_ALPR_Project\\captures_deblur_ab_full\\run_20260626_221248\\track_2"
+    },
+    {
+      "track_id": 4,
+      "seen_frames": 62,
+      "plate_hits": 2,
+      "best_score": 0.533786398988954,
+      "best_frame_idx": 593,
+      "locked_text": "冀B6R9F9",
+      "locked_confidence": 0.9559631280298364,
+      "locked_frame": 595,
+      "locked_consensus": {
+        "text": "冀B6R9F9",
+        "target_length": 7,
+        "event_count": 3,
+        "total_weight": 2.466191027574059,
+        "min_position_ratio": 0.691741896208855,
+        "mean_position_ratio": 0.9559631280298364,
+        "positions": [
+          {
+            "index": 0,
+            "char": "冀",
+            "weight": 1.705967657827344,
+            "total_weight": 2.466191027574059,
+            "ratio": 0.691741896208855
+          },
+          {
+            "index": 1,
+            "char": "B",
+            "weight": 2.466191027574059,
+            "total_weight": 2.466191027574059,
+            "ratio": 1.0
+          },
+          {
+            "index": 2,
+            "char": "6",
+            "weight": 2.466191027574059,
+            "total_weight": 2.466191027574059,
+            "ratio": 1.0
+          },
+          {
+            "index": 3,
+            "char": "R",
+            "weight": 2.466191027574059,
+            "total_weight": 2.466191027574059,
+            "ratio": 1.0
+          },
+          {
+            "index": 4,
+            "char": "9",
+            "weight": 2.466191027574059,
+            "total_weight": 2.466191027574059,
+            "ratio": 1.0
+          },
+          {
+            "index": 5,
+            "char": "F",
+            "weight": 2.466191027574059,
+            "total_weight": 2.466191027574059,
+            "ratio": 1.0
+          },
+          {
+            "index": 6,
+            "char": "9",
+            "weight": 2.466191027574059,
+            "total_weight": 2.466191027574059,
+            "ratio": 1.0
+          }
+        ]
+      },
+      "vote_history": [
+        "粤B6R9F9",
+        "冀B6R9F9",
+        "冀B6R9F9"
+      ],
+      "vote_events": [
+        {
+          "frame_idx": 593,
+          "text": "粤B6R9F9",
+          "confidence": 0.9578325152397156,
+          "source": "vehicle",
+          "vehicle_confidence": 0.7936913371086121,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.7602233697467149
+        },
+        {
+          "frame_idx": 594,
+          "text": "冀B6R9F9",
+          "confidence": 0.997734546661377,
+          "source": "vehicle",
+          "vehicle_confidence": 0.8448629379272461,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.8429489403638399
+        },
+        {
+          "frame_idx": 595,
+          "text": "冀B6R9F9",
+          "confidence": 0.9991568326950073,
+          "source": "vehicle",
+          "vehicle_confidence": 0.8637470006942749,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.863018717463504
+        }
+      ],
+      "vote_counts": {
+        "粤B6R9F9": 1,
+        "冀B6R9F9": 2
+      },
+      "rejected_count": 0,
+      "dir": "D:\\YOLO_ALPR_Project\\captures_deblur_ab_full\\run_20260626_221248\\track_4"
+    },
+    {
+      "track_id": 6,
+      "seen_frames": 23,
+      "plate_hits": 3,
+      "best_score": 0.5354818014170919,
+      "best_frame_idx": 1725,
+      "locked_text": "鲁V0JU1Q",
+      "locked_confidence": 1.0,
+      "locked_frame": 1728,
+      "locked_consensus": {
+        "text": "鲁V0JU1Q",
+        "target_length": 7,
+        "event_count": 3,
+        "total_weight": 2.3985678387871445,
+        "min_position_ratio": 1.0,
+        "mean_position_ratio": 1.0,
+        "positions": [
+          {
+            "index": 0,
+            "char": "鲁",
+            "weight": 2.3985678387871445,
+            "total_weight": 2.3985678387871445,
+            "ratio": 1.0
+          },
+          {
+            "index": 1,
+            "char": "V",
+            "weight": 2.3985678387871445,
+            "total_weight": 2.3985678387871445,
+            "ratio": 1.0
+          },
+          {
+            "index": 2,
+            "char": "0",
+            "weight": 2.3985678387871445,
+            "total_weight": 2.3985678387871445,
+            "ratio": 1.0
+          },
+          {
+            "index": 3,
+            "char": "J",
+            "weight": 2.3985678387871445,
+            "total_weight": 2.3985678387871445,
+            "ratio": 1.0
+          },
+          {
+            "index": 4,
+            "char": "U",
+            "weight": 2.3985678387871445,
+            "total_weight": 2.3985678387871445,
+            "ratio": 1.0
+          },
+          {
+            "index": 5,
+            "char": "1",
+            "weight": 2.3985678387871445,
+            "total_weight": 2.3985678387871445,
+            "ratio": 1.0
+          },
+          {
+            "index": 6,
+            "char": "Q",
+            "weight": 2.3985678387871445,
+            "total_weight": 2.3985678387871445,
+            "ratio": 1.0
+          }
+        ]
+      },
+      "vote_history": [
+        "鲁V0JU1Q",
+        "鲁V0JU1Q",
+        "鲁V0JU1Q"
+      ],
+      "vote_events": [
+        {
+          "frame_idx": 1726,
+          "text": "鲁V0JU1Q",
+          "confidence": 0.9956726431846619,
+          "source": "vehicle",
+          "vehicle_confidence": 0.8060489892959595,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.8025609277086332
+        },
+        {
+          "frame_idx": 1727,
+          "text": "鲁V0JU1Q",
+          "confidence": 0.9804403185844421,
+          "source": "vehicle",
+          "vehicle_confidence": 0.851718008518219,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.8350586756157092
+        },
+        {
+          "frame_idx": 1728,
+          "text": "鲁V0JU1Q",
+          "confidence": 0.9161595702171326,
+          "source": "vehicle",
+          "vehicle_confidence": 0.8305848240852356,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.7609482354628021
+        }
+      ],
+      "vote_counts": {
+        "鲁V0JU1Q": 3
+      },
+      "rejected_count": 0,
+      "dir": "D:\\YOLO_ALPR_Project\\captures_deblur_ab_full\\run_20260626_221248\\track_6"
+    },
+    {
+      "track_id": 10,
+      "seen_frames": 55,
+      "plate_hits": 11,
+      "best_score": 0.5284220281137775,
+      "best_frame_idx": 3186,
+      "locked_text": null,
+      "locked_confidence": null,
+      "locked_frame": null,
+      "locked_consensus": null,
+      "vote_history": [
+        "桂KAH512",
+        "鲁W56913",
+        "苏H55579",
+        "粤N56579",
+        "冀A56579",
+        "京NS6579"
+      ],
+      "vote_events": [
+        {
+          "frame_idx": 3174,
+          "text": "桂KAH512",
+          "confidence": 0.7181599736213684,
+          "source": "vehicle",
+          "vehicle_confidence": 0.8167963027954102,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.586590411269583
+        },
+        {
+          "frame_idx": 3179,
+          "text": "鲁W56913",
+          "confidence": 0.7666397094726562,
+          "source": "plate",
+          "vehicle_confidence": 0.695132851600647,
+          "candidate_score": 0.4751437205948986,
+          "obb_confidence": 0.8314641118049622,
+          "weight": 0.517802409558586
+        },
+        {
+          "frame_idx": 3182,
+          "text": "苏H55579",
+          "confidence": 0.7532286047935486,
+          "source": "vehicle",
+          "vehicle_confidence": 0.732501208782196,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.5517408635006014
+        },
+        {
+          "frame_idx": 3184,
+          "text": "粤N56579",
+          "confidence": 0.7884970307350159,
+          "source": "vehicle",
+          "vehicle_confidence": 0.7903662919998169,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.6232014744349001
+        },
+        {
+          "frame_idx": 3185,
+          "text": "冀A56579",
+          "confidence": 0.878722608089447,
+          "source": "vehicle",
+          "vehicle_confidence": 0.7231104969978333,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.6354135418587923
+        },
+        {
+          "frame_idx": 3186,
+          "text": "京NS6579",
+          "confidence": 0.9073802828788757,
+          "source": "vehicle",
+          "vehicle_confidence": 0.7143789529800415,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.6482133764377451
+        }
+      ],
+      "vote_counts": {
+        "桂KAH512": 1,
+        "鲁W56913": 1,
+        "苏H55579": 1,
+        "粤N56579": 1,
+        "冀A56579": 1,
+        "京NS6579": 1
+      },
+      "rejected_count": 0,
+      "dir": "D:\\YOLO_ALPR_Project\\captures_deblur_ab_full\\run_20260626_221248\\track_10"
+    },
+    {
+      "track_id": 12,
+      "seen_frames": 77,
+      "plate_hits": 0,
+      "best_score": null,
+      "best_frame_idx": null,
+      "locked_text": null,
+      "locked_confidence": null,
+      "locked_frame": null,
+      "locked_consensus": null,
+      "vote_history": [],
+      "vote_events": [],
+      "vote_counts": {},
+      "rejected_count": 2,
+      "dir": "D:\\YOLO_ALPR_Project\\captures_deblur_ab_full\\run_20260626_221248\\track_12"
+    },
+    {
+      "track_id": 13,
+      "seen_frames": 23,
+      "plate_hits": 2,
+      "best_score": 0.48753897616816605,
+      "best_frame_idx": 5432,
+      "locked_text": "冀CH7V97",
+      "locked_confidence": 1.0,
+      "locked_frame": 5434,
+      "locked_consensus": {
+        "text": "冀CH7V97",
+        "target_length": 7,
+        "event_count": 3,
+        "total_weight": 2.3621649392442343,
+        "min_position_ratio": 1.0,
+        "mean_position_ratio": 1.0,
+        "positions": [
+          {
+            "index": 0,
+            "char": "冀",
+            "weight": 2.3621649392442343,
+            "total_weight": 2.3621649392442343,
+            "ratio": 1.0
+          },
+          {
+            "index": 1,
+            "char": "C",
+            "weight": 2.3621649392442343,
+            "total_weight": 2.3621649392442343,
+            "ratio": 1.0
+          },
+          {
+            "index": 2,
+            "char": "H",
+            "weight": 2.3621649392442343,
+            "total_weight": 2.3621649392442343,
+            "ratio": 1.0
+          },
+          {
+            "index": 3,
+            "char": "7",
+            "weight": 2.3621649392442343,
+            "total_weight": 2.3621649392442343,
+            "ratio": 1.0
+          },
+          {
+            "index": 4,
+            "char": "V",
+            "weight": 2.3621649392442343,
+            "total_weight": 2.3621649392442343,
+            "ratio": 1.0
+          },
+          {
+            "index": 5,
+            "char": "9",
+            "weight": 2.3621649392442343,
+            "total_weight": 2.3621649392442343,
+            "ratio": 1.0
+          },
+          {
+            "index": 6,
+            "char": "7",
+            "weight": 2.3621649392442343,
+            "total_weight": 2.3621649392442343,
+            "ratio": 1.0
+          }
+        ]
+      },
+      "vote_history": [
+        "冀CH7V97",
+        "冀CH7V97",
+        "冀CH7V97"
+      ],
+      "vote_events": [
+        {
+          "frame_idx": 5432,
+          "text": "冀CH7V97",
+          "confidence": 0.9992619752883911,
+          "source": "vehicle",
+          "vehicle_confidence": 0.7781017422676086,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.7775274839536692
+        },
+        {
+          "frame_idx": 5433,
+          "text": "冀CH7V97",
+          "confidence": 0.9982466697692871,
+          "source": "vehicle",
+          "vehicle_confidence": 0.8542933464050293,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.8527954880548805
+        },
+        {
+          "frame_idx": 5434,
+          "text": "冀CH7V97",
+          "confidence": 0.9921846985816956,
+          "source": "vehicle",
+          "vehicle_confidence": 0.7376065850257874,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.7318419672356846
+        }
+      ],
+      "vote_counts": {
+        "冀CH7V97": 3
+      },
+      "rejected_count": 0,
+      "dir": "D:\\YOLO_ALPR_Project\\captures_deblur_ab_full\\run_20260626_221248\\track_13"
+    },
+    {
+      "track_id": 15,
+      "seen_frames": 2,
+      "plate_hits": 1,
+      "best_score": 0.5892749356755822,
+      "best_frame_idx": 6789,
+      "locked_text": null,
+      "locked_confidence": null,
+      "locked_frame": null,
+      "locked_consensus": null,
+      "vote_history": [
+        "冀CEJ509"
+      ],
+      "vote_events": [
+        {
+          "frame_idx": 6789,
+          "text": "冀CEJ509",
+          "confidence": 0.9956517815589905,
+          "source": "vehicle",
+          "vehicle_confidence": 0.8798823356628418,
+          "candidate_score": null,
+          "obb_confidence": null,
+          "weight": 0.8760564150649941
+        }
+      ],
+      "vote_counts": {
+        "冀CEJ509": 1
+      },
+      "rejected_count": 0,
+      "dir": "D:\\YOLO_ALPR_Project\\captures_deblur_ab_full\\run_20260626_221248\\track_15"
+    },
+    {
+      "track_id": 17,
+      "seen_frames": 4,
+      "plate_hits": 0,
+      "best_score": null,
+      "best_frame_idx": null,
+      "locked_text": null,
+      "locked_confidence": null,
+      "locked_frame": null,
+      "locked_consensus": null,
+      "vote_history": [],
+      "vote_events": [],
+      "vote_counts": {},
+      "rejected_count": 1,
+      "dir": "D:\\YOLO_ALPR_Project\\captures_deblur_ab_full\\run_20260626_221248\\track_17"
+    }
+  ]
+}

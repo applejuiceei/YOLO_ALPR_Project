@@ -1,0 +1,63 @@
+{
+  "track_id": 17,
+  "seen_frames": 4,
+  "plate_hits": 0,
+  "locked_text": null,
+  "locked_confidence": null,
+  "locked_frame": null,
+  "locked_consensus": null,
+  "vote_history": [],
+  "vote_events": [],
+  "vote_counts": {},
+  "topk": 0,
+  "candidates": [],
+  "rejected_count": 1,
+  "rejected_candidates": [
+    {
+      "rank": 1,
+      "frame_idx": 6813,
+      "track_id": 17,
+      "reason": "plate area 237.8 < 250.0",
+      "obb_score": 0.9370486736297607,
+      "plate_area": 237.75,
+      "geometry": {
+        "width": 24.82002544403076,
+        "height": 9.581533432006836,
+        "aspect": 2.5904022169478824,
+        "center_x": 1335.9107666015625,
+        "center_y": 597.947021484375,
+        "vehicle_overlap": 1.0
+      },
+      "vehicle_confidence": 0.7634316682815552,
+      "vehicle_box_xyxy": [
+        1261,
+        534,
+        1379,
+        639
+      ],
+      "plate_corners_xy": [
+        [
+          1348.189208984375,
+          603.0655517578125
+        ],
+        [
+          1348.443603515625,
+          593.4874267578125
+        ],
+        [
+          1323.63232421875,
+          592.8285522460938
+        ],
+        [
+          1323.3779296875,
+          602.40673828125
+        ]
+      ],
+      "files": {
+        "full": "rejected/full_reject1.jpg",
+        "vehicle": "rejected/vehicle_reject1.jpg",
+        "plate": "rejected/plate_reject1.jpg"
+      }
+    }
+  ]
+}

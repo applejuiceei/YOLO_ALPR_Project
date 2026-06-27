@@ -1,0 +1,329 @@
+{
+  "track_id": 6,
+  "seen_frames": 23,
+  "plate_hits": 3,
+  "locked_text": "鲁V0JU1Q",
+  "locked_confidence": 1.0,
+  "locked_frame": 1728,
+  "locked_consensus": {
+    "text": "鲁V0JU1Q",
+    "target_length": 7,
+    "event_count": 3,
+    "total_weight": 2.3985678387871445,
+    "min_position_ratio": 1.0,
+    "mean_position_ratio": 1.0,
+    "positions": [
+      {
+        "index": 0,
+        "char": "鲁",
+        "weight": 2.3985678387871445,
+        "total_weight": 2.3985678387871445,
+        "ratio": 1.0
+      },
+      {
+        "index": 1,
+        "char": "V",
+        "weight": 2.3985678387871445,
+        "total_weight": 2.3985678387871445,
+        "ratio": 1.0
+      },
+      {
+        "index": 2,
+        "char": "0",
+        "weight": 2.3985678387871445,
+        "total_weight": 2.3985678387871445,
+        "ratio": 1.0
+      },
+      {
+        "index": 3,
+        "char": "J",
+        "weight": 2.3985678387871445,
+        "total_weight": 2.3985678387871445,
+        "ratio": 1.0
+      },
+      {
+        "index": 4,
+        "char": "U",
+        "weight": 2.3985678387871445,
+        "total_weight": 2.3985678387871445,
+        "ratio": 1.0
+      },
+      {
+        "index": 5,
+        "char": "1",
+        "weight": 2.3985678387871445,
+        "total_weight": 2.3985678387871445,
+        "ratio": 1.0
+      },
+      {
+        "index": 6,
+        "char": "Q",
+        "weight": 2.3985678387871445,
+        "total_weight": 2.3985678387871445,
+        "ratio": 1.0
+      }
+    ]
+  },
+  "vote_history": [
+    "鲁V0JU1Q",
+    "鲁V0JU1Q",
+    "鲁V0JU1Q"
+  ],
+  "vote_events": [
+    {
+      "frame_idx": 1726,
+      "text": "鲁V0JU1Q",
+      "confidence": 0.9956726431846619,
+      "source": "vehicle",
+      "vehicle_confidence": 0.8060489892959595,
+      "candidate_score": null,
+      "obb_confidence": null,
+      "weight": 0.8025609277086332
+    },
+    {
+      "frame_idx": 1727,
+      "text": "鲁V0JU1Q",
+      "confidence": 0.9804403185844421,
+      "source": "vehicle",
+      "vehicle_confidence": 0.851718008518219,
+      "candidate_score": null,
+      "obb_confidence": null,
+      "weight": 0.8350586756157092
+    },
+    {
+      "frame_idx": 1728,
+      "text": "鲁V0JU1Q",
+      "confidence": 0.9161595702171326,
+      "source": "vehicle",
+      "vehicle_confidence": 0.8305848240852356,
+      "candidate_score": null,
+      "obb_confidence": null,
+      "weight": 0.7609482354628021
+    }
+  ],
+  "vote_counts": {
+    "鲁V0JU1Q": 3
+  },
+  "topk": 3,
+  "candidates": [
+    {
+      "rank": 1,
+      "frame_idx": 1725,
+      "track_id": 6,
+      "score": 0.5354818014170919,
+      "subscores": {
+        "plate_area_score": 0.23175,
+        "sharpness_score": 0.7225402819402331,
+        "exposure_score": 0.2783203125,
+        "contrast_score": 1.0,
+        "obb_score": 0.9585916996002197
+      },
+      "raw_metrics": {
+        "plate_area": 1158.75,
+        "laplacian_variance": 146.209041273329,
+        "gray_std": 80.7763674076229,
+        "clipped_ratio": 0.36083984375,
+        "obb_confidence": 0.9585916996002197
+      },
+      "geometry": {
+        "width": 52.24932861328125,
+        "height": 22.176729202270508,
+        "aspect": 2.3560430456954777,
+        "center_x": 1892.609130859375,
+        "center_y": 1066.041748046875,
+        "vehicle_overlap": 0.978568174602079
+      },
+      "vehicle_confidence": 0.8200970888137817,
+      "vehicle_box_xyxy": [
+        1621,
+        864,
+        1918,
+        1079
+      ],
+      "plate_corners_xy": [
+        [
+          1919.1370849609375,
+          1076.127197265625
+        ],
+        [
+          1918.2926025390625,
+          1053.966552734375
+        ],
+        [
+          1866.0811767578125,
+          1055.9564208984375
+        ],
+        [
+          1866.9256591796875,
+          1078.1170654296875
+        ]
+      ],
+      "files": {
+        "full": "full_rank1.jpg",
+        "vehicle": "vehicle_rank1.jpg",
+        "plate": "plate_rank1.jpg"
+      },
+      "deblur": {
+        "ocr": {
+          "text": null,
+          "confidence": null,
+          "engine": null
+        },
+        "used_for_vote": false,
+        "files": {
+          "plate": "plate_deblur_rank1.jpg"
+        }
+      }
+    },
+    {
+      "rank": 2,
+      "frame_idx": 1727,
+      "track_id": 6,
+      "score": 0.40216868940219075,
+      "subscores": {
+        "plate_area_score": 0.20665,
+        "sharpness_score": 0.5664716215071259,
+        "exposure_score": 0.123046875,
+        "contrast_score": 0.4702551095061756,
+        "obb_score": 0.9441716074943542
+      },
+      "raw_metrics": {
+        "plate_area": 1033.25,
+        "laplacian_variance": 49.07958912743462,
+        "gray_std": 30.09632700839524,
+        "clipped_ratio": 0.4384765625,
+        "obb_confidence": 0.9441716074943542
+      },
+      "geometry": {
+        "width": 52.90827178955078,
+        "height": 19.52950096130371,
+        "aspect": 2.7091461217767256,
+        "center_x": 1737.3289794921875,
+        "center_y": 937.145263671875,
+        "vehicle_overlap": 1.0
+      },
+      "vehicle_confidence": 0.851718008518219,
+      "vehicle_box_xyxy": [
+        1525,
+        780,
+        1815,
+        974
+      ],
+      "plate_corners_xy": [
+        [
+          1764.079833984375,
+          946.0650634765625
+        ],
+        [
+          1763.459716796875,
+          926.54541015625
+        ],
+        [
+          1710.578125,
+          928.2254638671875
+        ],
+        [
+          1711.1982421875,
+          947.7451171875
+        ]
+      ],
+      "files": {
+        "full": "full_rank2.jpg",
+        "vehicle": "vehicle_rank2.jpg",
+        "plate": "plate_rank2.jpg"
+      },
+      "ocr": {
+        "text": "鲁V0JU1Q",
+        "confidence": 0.9804403185844421,
+        "engine": "hyperlpr3"
+      },
+      "deblur": {
+        "ocr": {
+          "text": "鲁V0JU10",
+          "confidence": 0.9978300929069519,
+          "engine": "hyperlpr3"
+        },
+        "used_for_vote": false,
+        "files": {
+          "plate": "plate_deblur_rank2.jpg"
+        }
+      }
+    },
+    {
+      "rank": 3,
+      "frame_idx": 1726,
+      "track_id": 6,
+      "score": 0.3930587493136264,
+      "subscores": {
+        "plate_area_score": 0.2176,
+        "sharpness_score": 0.4879016727257878,
+        "exposure_score": 0.18092447916666665,
+        "contrast_score": 0.49239533087015613,
+        "obb_score": 0.9415004253387451
+      },
+      "raw_metrics": {
+        "plate_area": 1088.0,
+        "laplacian_variance": 28.101595861646864,
+        "gray_std": 31.513301175689993,
+        "clipped_ratio": 0.4095377604166667,
+        "obb_confidence": 0.9415004253387451
+      },
+      "geometry": {
+        "width": 54.488542556762695,
+        "height": 19.96659564971924,
+        "aspect": 2.7289851265921183,
+        "center_x": 1771.421630859375,
+        "center_y": 964.5409545898438,
+        "vehicle_overlap": 1.0
+      },
+      "vehicle_confidence": 0.8060489892959595,
+      "vehicle_box_xyxy": [
+        1548,
+        798,
+        1854,
+        998
+      ],
+      "plate_corners_xy": [
+        [
+          1798.8995361328125,
+          973.8622436523438
+        ],
+        [
+          1798.41650390625,
+          953.9014892578125
+        ],
+        [
+          1743.9439697265625,
+          955.2196044921875
+        ],
+        [
+          1744.4268798828125,
+          975.1803588867188
+        ]
+      ],
+      "files": {
+        "full": "full_rank3.jpg",
+        "vehicle": "vehicle_rank3.jpg",
+        "plate": "plate_rank3.jpg"
+      },
+      "ocr": {
+        "text": "鲁V0JU1Q",
+        "confidence": 0.9956726431846619,
+        "engine": "hyperlpr3"
+      },
+      "deblur": {
+        "ocr": {
+          "text": "鲁V0JU1Q",
+          "confidence": 0.9988222122192383,
+          "engine": "hyperlpr3"
+        },
+        "used_for_vote": false,
+        "files": {
+          "plate": "plate_deblur_rank3.jpg"
+        }
+      }
+    }
+  ],
+  "rejected_count": 0,
+  "rejected_candidates": []
+}
