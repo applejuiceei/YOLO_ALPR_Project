@@ -1,0 +1,97 @@
+# Python environments and caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE and office caches
+.idea/
+.vscode/
+.wpp_backup/
+_docx_render*/
+_lo_profile*/
+lo_profile*/
+
+# Third-party and local dependency copies
+python_deps*/
+third_party/
+Ultralytics/
+PaddleCache/
+LPDGAN/
+My_models/
+
+# Datasets, generated runs, captures and reports
+Dataset/
+测试图/
+captures*/
+runs*/
+models_run/
+obb_ab_single_frames/
+report_assets*/
+report_render*/
+blur models/
+ppocr_plate/data/
+ppocr_plate/artifacts/
+
+# RK3588 generated evidence, bundles and extracted probes
+RK3588_dev/offline_bundle/
+RK3588_dev/_analysis*/
+RK3588_dev/board_inspection*/
+RK3588_dev/*_extract/
+RK3588_dev/rk_*/
+RK3588_dev/run_[0-9]*/
+
+# Archives and packages
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.7z
+*.rar
+
+# Models, checkpoints and compiled artifacts
+*.pt
+*.pth
+*.onnx
+*.rknn
+*.pb
+*.engine
+*.weights
+*.ckpt
+*.pdparams
+*.pdopt
+*.pdmodel
+*.exe
+*.dll
+*.pyd
+*.so
+*.lib
+*.a
+
+# Media, raw captures and office artifacts
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.raw
+*.yuv
+*.nv12
+*.mp4
+*.avi
+*.mkv
+*.mov
+*.webm
+*.docx
+*.pptx
+*.xlsx
+*.pdf
+
+# Logs and local outputs
+*.log
+*.tmp
+*.bak
+

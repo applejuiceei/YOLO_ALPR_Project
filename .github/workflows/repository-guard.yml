@@ -1,0 +1,26 @@
+name: Repository guard
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  large-file-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Reject blobs at or above 95 MiB
+        run: python tools/check_git_blob_sizes.py --revisions HEAD --limit-mib 95
+

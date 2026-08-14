@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#F7FAFF"/><stop offset="1" stop-color="#EEF4FA"/>
+    </linearGradient>
+    <linearGradient id="topk" x1="0" x2="1"><stop stop-color="#075985"/><stop offset="1" stop-color="#0E7490"/></linearGradient>
+    <linearGradient id="legacy" x1="0" x2="1"><stop stop-color="#64748B"/><stop offset="1" stop-color="#475569"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="7" stdDeviation="10" flood-color="#1E3A5F" flood-opacity=".13"/></filter>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#0F172A" flood-opacity=".10"/></filter>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#0284C7"/></marker>
+    <marker id="arrowGray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/></marker>
+    <style>
+      .zh { font-family: 'Microsoft YaHei','Noto Sans CJK SC','PingFang SC',sans-serif; }
+      .title { font-size: 44px; font-weight: 800; fill: #0F2742; letter-spacing: 1px; }
+      .sub { font-size: 19px; fill: #52708E; }
+      .lane { font-size: 20px; font-weight: 800; fill: white; }
+      .boxTitle { font-size: 20px; font-weight: 800; fill: #15314D; }
+      .boxText { font-size: 15px; fill: #46637D; }
+      .tag { font-size: 14px; font-weight: 700; fill: #075985; }
+      .small { font-size: 14px; fill: #5F7286; }
+      .caption { font-size: 18px; font-weight: 800; fill: #075985; }
+    </style>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <path d="M0 125 H1920" stroke="#DCE8F2" stroke-width="2"/>
+  <text class="zh title" x="90" y="76">ALPR 车牌抓拍流程演进：Top-K 精选留存</text>
+  <text class="zh sub" x="92" y="110">共同识别主链不变；突出两者在抓拍策略、候选管理和证据输出上的关键差异</text>
+  <rect x="1598" y="48" width="226" height="48" rx="24" fill="#DDF5F5"/>
+  <circle cx="1631" cy="72" r="8" fill="#14B8A6"/><text class="zh tag" x="1648" y="78">横向汇报版 · 16:9</text>
+
+  <!-- shared pipeline ribbon -->
+  <rect x="90" y="148" width="1740" height="72" rx="18" fill="#E5F4FE" stroke="#B8E1F8" stroke-width="2"/>
+  <text class="zh caption" x="125" y="193">共同核心链路</text>
+  <path d="M310 184 H452" stroke="#0284C7" stroke-width="3" marker-end="url(#arrowBlue)"/>
+  <text class="zh boxText" x="332" y="177">车辆检测 / 跟踪</text>
+  <path d="M590 184 H732" stroke="#0284C7" stroke-width="3" marker-end="url(#arrowBlue)"/>
+  <text class="zh boxText" x="612" y="177">高分辨率 ROI</text>
+  <path d="M870 184 H1012" stroke="#0284C7" stroke-width="3" marker-end="url(#arrowBlue)"/>
+  <text class="zh boxText" x="893" y="177">车牌 OBB 检测</text>
+  <path d="M1150 184 H1292" stroke="#0284C7" stroke-width="3" marker-end="url(#arrowBlue)"/>
+  <text class="zh boxText" x="1172" y="177">透视矫正</text>
+  <path d="M1430 184 H1572" stroke="#0284C7" stroke-width="3" marker-end="url(#arrowBlue)"/>
+  <text class="zh boxText" x="1456" y="177">OCR / 结果留存</text>
+
+  <!-- legacy lane -->
+  <rect x="90" y="255" width="1740" height="295" rx="24" fill="#F8FAFC" stroke="#D7E0EA" stroke-width="2"/>
+  <rect x="90" y="255" width="248" height="295" rx="24" fill="url(#legacy)"/>
+  <text class="zh lane" x="122" y="304">alpr_sahi_snapshot2</text>
+  <text class="zh" x="122" y="337" font-size="16" fill="#DCE8F5">基线方案：即时抓拍</text>
+  <line x1="122" y1="361" x2="303" y2="361" stroke="#B8CBDE"/>
+  <text class="zh" x="122" y="395" font-size="15" fill="#E3EDF5">• SAHI 原生 ROI 切片</text>
+  <text class="zh" x="122" y="425" font-size="15" fill="#E3EDF5">• OCR 投票达成共识</text>
+  <text class="zh" x="122" y="455" font-size="15" fill="#E3EDF5">• 成功即保存双证据</text>
+  <text class="zh" x="122" y="485" font-size="15" fill="#E3EDF5">• 丢失目标时兜底抓拍</text>
+
+  <g filter="url(#soft)">
+    <rect x="385" y="309" width="225" height="164" rx="16" fill="white"/>
+    <rect x="385" y="309" width="225" height="9" rx="4" fill="#94A3B8"/>
+    <text class="zh boxTitle" x="411" y="355">全局找车 + 跟踪</text><text class="zh boxText" x="411" y="385">640 分辨率车辆检测</text><text class="zh boxText" x="411" y="411">车 / 巴士 / 卡车</text>
+    <rect x="677" y="309" width="225" height="164" rx="16" fill="white"/>
+    <rect x="677" y="309" width="225" height="9" rx="4" fill="#94A3B8"/>
+    <text class="zh boxTitle" x="702" y="355">原生 ROI + OBB</text><text class="zh boxText" x="702" y="385">4K 区域裁剪</text><text class="zh boxText" x="702" y="411">320 尺寸 OBB 找牌</text>
+    <rect x="969" y="309" width="225" height="164" rx="16" fill="white"/>
+    <rect x="969" y="309" width="225" height="9" rx="4" fill="#94A3B8"/>
+    <text class="zh boxTitle" x="994" y="355">校正 + OCR 投票</text><text class="zh boxText" x="994" y="385">拉平车牌 → PaddleOCR</text><text class="zh boxText" x="994" y="411">2 次共识即锁定</text>
+    <rect x="1261" y="309" width="240" height="164" rx="16" fill="#FFF9EC" stroke="#F7CB75" stroke-width="2"/>
+    <text class="zh boxTitle" x="1287" y="355">即时 / 兜底抓拍</text><text class="zh boxText" x="1287" y="385">锁定：全景图 + 车牌图</text><text class="zh boxText" x="1287" y="411">消失：最高票结果兜底</text>
+    <rect x="1568" y="309" width="185" height="164" rx="16" fill="#EEF2F7"/>
+    <text class="zh boxTitle" x="1593" y="355">captures/</text><text class="zh boxText" x="1593" y="386">full.jpg</text><text class="zh boxText" x="1593" y="413">plate.jpg</text>
+  </g>
+  <path d="M610 391 H663" stroke="#64748B" stroke-width="3" marker-end="url(#arrowGray)"/><path d="M902 391 H955" stroke="#64748B" stroke-width="3" marker-end="url(#arrowGray)"/><path d="M1194 391 H1247" stroke="#64748B" stroke-width="3" marker-end="url(#arrowGray)"/><path d="M1501 391 H1554" stroke="#64748B" stroke-width="3" marker-end="url(#arrowGray)"/>
+
+  <!-- evolution arrow -->
+  <path d="M960 573 V633" stroke="#0EA5A8" stroke-width="5" marker-end="url(#arrowBlue)"/>
+  <rect x="773" y="571" width="374" height="53" rx="26" fill="#CCFBF1" stroke="#5EEAD4"/>
+  <text class="zh" x="813" y="605" font-size="19" font-weight="800" fill="#0F766E">在同一识别主链上升级为“优选留存”</text>
+
+  <!-- difference callouts: the narrative focus -->
+  <g filter="url(#soft)">
+    <rect x="365" y="573" width="188" height="53" rx="12" fill="#FFF7E6" stroke="#F7C35D"/>
+    <text class="zh" x="387" y="596" font-size="14" font-weight="800" fill="#9A5A00">① 抓拍时机</text><text class="zh" x="387" y="616" font-size="13" fill="#79521A">即时触发 → 跨帧优选</text>
+    <rect x="1367" y="573" width="188" height="53" rx="12" fill="#FFF7E6" stroke="#F7C35D"/>
+    <text class="zh" x="1389" y="596" font-size="14" font-weight="800" fill="#9A5A00">② 候选策略</text><text class="zh" x="1389" y="616" font-size="13" fill="#79521A">单一结果 → 每轨迹 Top-K</text>
+  </g>
+
+  <!-- enhanced lane -->
+  <rect x="90" y="655" width="1740" height="340" rx="24" fill="#F2FBFE" stroke="#8FD6E9" stroke-width="3"/>
+  <rect x="90" y="655" width="248" height="340" rx="24" fill="url(#topk)"/>
+  <text class="zh lane" x="122" y="706">alpr_topk_capture</text>
+  <text class="zh" x="122" y="739" font-size="16" fill="#D8F6FA">升级方案：质量优选</text>
+  <line x1="122" y1="761" x2="303" y2="761" stroke="#81D6DF"/>
+  <text class="zh" x="122" y="795" font-size="15" fill="#E5FBFD">• 双跟踪：IoU / Ultralytics</text>
+  <text class="zh" x="122" y="825" font-size="15" fill="#E5FBFD">• 车辆就绪门控，过滤远小车</text>
+  <text class="zh" x="122" y="855" font-size="15" fill="#E5FBFD">• 评分排序，每轨迹保留 Top-K</text>
+  <text class="zh" x="122" y="885" font-size="15" fill="#E5FBFD">• OCR 可实时投票或事后识别</text>
+  <text class="zh" x="122" y="915" font-size="15" fill="#E5FBFD">• 结构化证据与拒绝样本均归档</text>
+
+  <g filter="url(#shadow)">
+    <rect x="385" y="716" width="205" height="184" rx="17" fill="white"/>
+    <rect x="385" y="716" width="205" height="10" rx="5" fill="#0EA5A8"/>
+    <text class="zh boxTitle" x="409" y="760">车辆跟踪</text><text class="zh boxText" x="409" y="790">全帧检测 + ID</text><text class="zh boxText" x="409" y="816">就绪门控</text><text class="zh small" x="409" y="852">置信度 / 尺寸 / 面积</text>
+    <rect x="630" y="716" width="205" height="184" rx="17" fill="white"/>
+    <rect x="630" y="716" width="205" height="10" rx="5" fill="#0EA5A8"/>
+    <text class="zh boxTitle" x="654" y="760">ROI → OBB → 拉平</text><text class="zh boxText" x="654" y="790">保留原始全帧</text><text class="zh boxText" x="654" y="816">提取车身与车牌裁剪</text><text class="zh small" x="654" y="852">沿用 SAHI 的高分辨率优势</text>
+    <rect x="875" y="716" width="205" height="184" rx="17" fill="#FFF9EC" stroke="#F5C669" stroke-width="2"/>
+    <text class="zh boxTitle" x="899" y="760">质量筛选与评分</text><text class="zh boxText" x="899" y="790">几何 / 重叠 / 面积过滤</text><text class="zh boxText" x="899" y="816">清晰度、曝光、对比度</text><text class="zh small" x="899" y="852">低质样本另存“拒绝池”</text>
+    <rect x="1120" y="716" width="205" height="184" rx="17" fill="#EAF9FF" stroke="#51BCE2" stroke-width="2"/>
+    <text class="zh boxTitle" x="1144" y="760">每个 ID 的 Top-K</text><text class="zh boxText" x="1144" y="790">按质量分降序排序</text><text class="zh boxText" x="1144" y="816">持续淘汰较差候选</text><text class="zh small" x="1144" y="852">从“单次抓拍”变为优选集</text>
+    <rect x="1365" y="716" width="205" height="184" rx="17" fill="#F4F0FF" stroke="#B6A2F6" stroke-width="2"/>
+    <text class="zh boxTitle" x="1389" y="760">可选 OCR 与锁定</text><text class="zh boxText" x="1389" y="790">实时加权投票</text><text class="zh boxText" x="1389" y="816">或对 Top-K 事后 OCR</text><text class="zh small" x="1389" y="852">锁定后可跳过重复检测</text>
+    <rect x="1610" y="716" width="143" height="184" rx="17" fill="#075985"/>
+    <text class="zh" x="1630" y="758" font-size="19" font-weight="800" fill="white">run_时间戳/</text><text class="zh" x="1630" y="794" font-size="14" fill="#D8F7FB">全景 / 车身</text><text class="zh" x="1630" y="820" font-size="14" fill="#D8F7FB">车牌 / JSON</text><text class="zh" x="1630" y="846" font-size="14" fill="#D8F7FB">Top-K / 拒绝池</text>
+  </g>
+  <path d="M590 808 H616" stroke="#0284C7" stroke-width="3" marker-end="url(#arrowBlue)"/><path d="M835 808 H861" stroke="#0284C7" stroke-width="3" marker-end="url(#arrowBlue)"/><path d="M1080 808 H1106" stroke="#0284C7" stroke-width="3" marker-end="url(#arrowBlue)"/><path d="M1325 808 H1351" stroke="#0284C7" stroke-width="3" marker-end="url(#arrowBlue)"/><path d="M1570 808 H1596" stroke="#0284C7" stroke-width="3" marker-end="url(#arrowBlue)"/>
+
+  <rect x="385" y="927" width="1368" height="42" rx="12" fill="#DDF4FB"/>
+  <text class="zh" x="419" y="954" font-size="17" font-weight="700" fill="#075985">汇报结论：</text>
+  <text class="zh" x="535" y="954" font-size="17" fill="#29536D">Top-K 不是替代 SAHI 主链，而是将它从“识别成功即保存”升级为“跨帧评分、精选候选、可追溯归档”的生产化能力。</text>
+
+  <!-- bottom comparison strip -->
+  <rect x="90" y="1012" width="1740" height="48" rx="14" fill="#173B59"/>
+  <text class="zh" x="120" y="1043" font-size="16" font-weight="800" fill="#A6E7F2">差异一：触发方式</text><text class="zh" x="280" y="1043" font-size="15" fill="white">snapshot2：OCR 共识即抓拍 / 目标消失兜底</text>
+  <path d="M715 1036 H755" stroke="#6EE7F2" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <text class="zh" x="778" y="1043" font-size="15" fill="white">topk_capture：全过程收集，按分数保留最佳 Top-K</text>
+  <line x1="1235" y1="1023" x2="1235" y2="1049" stroke="#53728D"/>
+  <text class="zh" x="1260" y="1043" font-size="16" font-weight="800" fill="#A6E7F2">差异二：输出</text><text class="zh" x="1370" y="1043" font-size="15" fill="white">双图快照 → 多级证据包 + JSON</text>
+</svg>

@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+
+PYTHON_BIN="${PYTHON_BIN:-python}"
+exec "$PYTHON_BIN" tools/check_git_blob_sizes.py --pre-push --limit-mib 95
+
