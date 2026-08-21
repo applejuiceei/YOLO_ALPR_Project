@@ -1,0 +1,65 @@
+%YAML:1.0
+---
+camera:
+  camera_id: 1
+  lane_id: 1
+  source: "../RK3588_dev/offline_bundle/rk3588_alpr_roadtest_bundle_20260701/deploy/144.mp4"
+  queue_capacity: 2
+  realtime_playback: 1
+
+vehicle_detector:
+  backend: "onnxruntime"
+  model: "models/vehicle_detector/yolo11n.onnx"
+  input_width: 640
+  input_height: 640
+  # 低分框只提供给 ByteTrack 第二阶段，新轨迹门槛由 vehicle_tracker 控制。
+  confidence: 0.10
+  nms: 0.45
+  intra_op_threads: 4
+
+vehicle_cropper:
+  expand_left: 0.0
+  expand_right: 0.0
+  expand_top: 0.0
+  expand_bottom: 0.0
+  min_width: 16
+  min_height: 16
+  clone_output: 0
+
+vehicle_color:
+  backend: "onnxruntime"
+  model: "models/vehicle_color/vehicle_attribute_pp_lcnet.onnx"
+  input_width: 256
+  input_height: 192
+  confidence: 0.50
+  intra_op_threads: 2
+
+vehicle_tracker:
+  backend: "bytetrack"
+  high_confidence: 0.40
+  low_confidence: 0.10
+  new_track_confidence: 0.50
+  # 第一次关联使用 1 - IoU*score，第二次使用 1 - IoU；数值是最大允许代价。
+  first_match_threshold: 0.80
+  second_match_threshold: 0.50
+  unconfirmed_match_threshold: 0.70
+  track_buffer_frames: 30
+  class_aware: 1
+
+vehicle_fusion:
+  backend: "confidence_weighted"
+  max_history_per_track: 30
+  min_samples: 3
+  min_sample_confidence: 0.50
+  min_vote_ratio: 0.60
+  stale_after_frames: 60
+  include_other: 0
+
+runtime:
+  display: 1
+  max_frames: 610
+  report_interval: 60
+  output_video: "runs/pc_stage5_vehicle_fusion/annotated.mp4"
+  summary_json: "runs/pc_stage5_vehicle_fusion/summary.json"
+  vehicle_roi_dir: "runs/pc_stage5_vehicle_fusion/vehicle_rois"
+  max_saved_vehicle_rois: 64

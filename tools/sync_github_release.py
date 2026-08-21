@@ -32,6 +32,8 @@ ALLOWED_SUFFIXES = {
     ".yml",
 }
 
+ALLOWED_SPECIAL_FILE_NAMES = {".gitignore"}
+
 FORBIDDEN_DIRECTORY_NAMES = {
     ".git",
     ".idea",
@@ -110,7 +112,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--apply",
         action="store_true",
-        help="执行复制；不指定时只显示计划，不写入文件。",
+        help=(
+            "执行复制；不指定时只显示计划。若目标已有未提交内容，"
+            "仅在其属于白名单且不会丢失内容时继续。"
+        ),
     )
     parser.add_argument(
         "--destination",
@@ -191,7 +196,10 @@ def validate_file_path(relative_path: Path, source_path: Path) -> None:
         or "secret" in lowered_name
     ):
         raise ValueError(f"白名单命中了敏感文件名：{relative_path.as_posix()}")
-    if lowered_suffix not in ALLOWED_SUFFIXES:
+    if (
+        lowered_suffix not in ALLOWED_SUFFIXES
+        and lowered_name not in ALLOWED_SPECIAL_FILE_NAMES
+    ):
         raise ValueError(
             f"不允许的发布文件类型 {lowered_suffix or '<无扩展名>'}："
             f"{relative_path.as_posix()}"
@@ -265,7 +273,7 @@ def git(destination: Path, *args: str) -> str:
     return completed.stdout.strip()
 
 
-def validate_destination(destination: Path, source_root: Path, *, require_clean: bool) -> Path:
+def validate_destination(destination: Path, source_root: Path) -> Path:
     destination = destination.resolve()
     if not destination.is_dir():
         raise FileNotFoundError(
@@ -283,13 +291,6 @@ def validate_destination(destination: Path, source_root: Path, *, require_clean:
         raise ValueError(
             f"目标分支是 {branch or '<detached>'}，要求为 {EXPECTED_RELEASE_BRANCH}；拒绝同步。"
         )
-    if require_clean:
-        status = git(destination, "status", "--porcelain=v1", "--untracked-files=all")
-        if status:
-            raise RuntimeError(
-                "发布工作区存在未提交更改，拒绝覆盖。请先在 VS Code 中检查、提交或处理：\n"
-                f"{status}"
-            )
     return destination
 
 
@@ -343,6 +344,83 @@ def build_plan(
     return plan
 
 
+def git_status_entries(destination: Path) -> list[tuple[str, Path]]:
+    safe_directory = destination.resolve().as_posix()
+    completed = subprocess.run(
+        [
+            "git",
+            "-c",
+            f"safe.directory={safe_directory}",
+            "-C",
+            str(destination),
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+        ],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if completed.returncode != 0:
+        message = completed.stderr.decode("utf-8", errors="replace").strip()
+        raise RuntimeError(f"git status 失败：{message}")
+
+    entries: list[tuple[str, Path]] = []
+    for raw_entry in completed.stdout.split(b"\0"):
+        if not raw_entry:
+            continue
+        if len(raw_entry) < 4 or raw_entry[2:3] != b" ":
+            raise RuntimeError(f"无法解析 git status 项：{raw_entry!r}")
+        status = raw_entry[:2].decode("ascii", errors="replace")
+        if any(code in status for code in ("D", "R", "C", "U")):
+            raise RuntimeError(
+                f"发布工作区包含删除、重命名、复制或冲突状态 {status!r}；"
+                "为避免覆盖，拒绝继续同步。"
+            )
+        relative_path = Path(os.fsdecode(raw_entry[3:]).replace("\\", "/"))
+        entries.append((status, relative_path))
+    return entries
+
+
+def validate_apply_state(destination: Path, plan: list[PlannedFile]) -> None:
+    entries = git_status_entries(destination)
+    if not entries:
+        return
+
+    managed = {item.relative_path.as_posix().casefold(): item for item in plan}
+    safe_entries: list[str] = []
+    for status, relative_path in entries:
+        key = relative_path.as_posix().casefold()
+        item = managed.get(key)
+        if item is None:
+            raise RuntimeError(
+                f"发布工作区存在非白名单未提交文件 {relative_path.as_posix()} "
+                f"({status})；拒绝继续同步。"
+            )
+        if not item.destination_path.is_file() or item.destination_path.is_symlink():
+            raise RuntimeError(
+                f"白名单未提交项不是可安全比较的普通文件：{relative_path.as_posix()}"
+            )
+
+        source_bytes = normalized_text_bytes(item.source_path)
+        destination_bytes = normalized_text_bytes(item.destination_path)
+        if destination_bytes == source_bytes:
+            reason = "与源文件一致"
+        elif source_bytes.startswith(destination_bytes):
+            reason = "源文件仅追加内容"
+        else:
+            raise RuntimeError(
+                f"发布工作区的未提交文件与源文件存在内容冲突："
+                f"{relative_path.as_posix()} ({status})；拒绝覆盖。"
+            )
+        safe_entries.append(f"{relative_path.as_posix()}（{reason}）")
+
+    print(f"[SAFE] 发布工作区已有 {len(safe_entries)} 个受管未提交文件，可安全续传：")
+    for entry in safe_entries:
+        print(f"  {entry}")
+
+
 def print_plan(plan: list[PlannedFile], destination: Path, *, applying: bool) -> None:
     changed = [item for item in plan if item.action != "SAME"]
     total_bytes = sum(item.size for item in plan)
@@ -385,15 +463,12 @@ def main() -> int:
     try:
         patterns = load_manifest(args.manifest, source_root)
         selected_files = collect_files(source_root, patterns)
-        destination = validate_destination(
-            args.destination,
-            source_root,
-            require_clean=args.apply,
-        )
+        destination = validate_destination(args.destination, source_root)
         plan = build_plan(source_root, destination, selected_files)
         print_plan(plan, destination, applying=args.apply)
         if not args.apply:
             return 0
+        validate_apply_state(destination, plan)
         changed_count = apply_plan(plan)
         print(f"同步完成：写入 {changed_count} 个文件；未删除、未暂存、未提交、未推送。")
         if changed_count:

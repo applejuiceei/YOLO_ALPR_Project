@@ -28,6 +28,19 @@ RK3588_dev/CMakeLists.txt
 RK3588_dev/dict.txt
 RK3588_dev/dataset.txt
 
+# RK3588 模块化 C++ 车辆系统一方源码
+# 精确覆盖源码、测试、配置、脚本和说明；不复制 build、runs、third_party 或模型二进制。
+rk3588_vehicle_system/.gitignore
+rk3588_vehicle_system/CMakeLists.txt
+rk3588_vehicle_system/*.md
+rk3588_vehicle_system/config/*.yaml
+rk3588_vehicle_system/include/**/*.hpp
+rk3588_vehicle_system/src/**/*.cpp
+rk3588_vehicle_system/tests/**/*.cpp
+rk3588_vehicle_system/scripts/*.py
+rk3588_vehicle_system/scripts/*.ps1
+rk3588_vehicle_system/models/**/infer_cfg.yml
+
 # 项目维护工具；包含本同步脚本本身
 tools/**/*.py
 

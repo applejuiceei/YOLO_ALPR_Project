@@ -185,3 +185,47 @@
 - `D:\YOLO_ALPR_Project_GitHubRelease` 作为 `codex/github-release` 的独立 worktree，只接收白名单内的一方源码、配置和文档。
 - `release_manifest.txt` 是批量发布范围的版本化白名单；`tools/sync_github_release.py` 负责预览和同步。
 - 日常同步命令为 `python .\tools\sync_github_release.py --apply`。同步只新增或更新文件，不删除、不暂存、不提交、不推送，并继续执行 95 MiB 与敏感信息保护。
+
+## 2026-08-19 模块化 C++ 车辆系统 PC Stage 1
+
+- 新增独立目录 `rk3588_vehicle_system`，用于最终 RK3588 四路结构化车辆系统的模块化 C++ 实现；当前按用户要求先做 PC 模拟，不改变既有 Python ALPR 主线。
+- 已实现单路 `CameraManager + FrameQueue + IVehicleDetector + Yolo11OnnxVehicleDetector`，使用 Rockchip 官方 YOLO11 示例的优化 ONNX，正式 RKNN detector 将复用同一接口。
+- 用户确认离线包 `deploy/144.mp4` 与 `测试图/14.mp4` 是同一段测试视频；Windows C++ 入口读取 ASCII 路径副本，避免 OpenCV 中文视频路径问题。
+- 本阶段只验收车辆/行人检测与画框，不提前实现 Cropper、颜色、跟踪、车牌、融合或四路调度。
+
+## 2026-08-20 模块化 C++ 车辆系统 PC Stage 2
+
+- 已新增并接入独立 `IVehicleCropper/VehicleCropper`，支持 bbox 边界修正、四方向可配置扩张、最小尺寸过滤和可选深拷贝；默认返回零额外像素复制的 OpenCV 浅 ROI。
+- 已提供不依赖模型的确定性单元测试，以及真实图片/视频的独立 detector + cropper 集成入口。
+- 610 帧主链路完成 172 次车辆裁剪、0 拒绝、保存 64 张，处理速度 15.741 FPS；Cropper 每帧平均 0.001 ms，不是当前性能瓶颈。
+- 下一阶段只进入车辆颜色模型评估与独立分类测试，尚未实现 ByteTrack、车牌或多路调度。
+
+## 2026-08-20 模块化 C++ 车辆系统 PC Stage 3
+
+- 已取得 PaddleDetection 官方 PP-Vehicle 车辆属性 PP-LCNet 模型，使用隔离转换依赖导出 ONNX；原始 Conda 环境未修改。
+- 新增可替换 `IVehicleColorClassifier` 和 ONNX Runtime CPU 实现，模型输入为 RGB `N×3×192×256`，输出为已带 Sigmoid 的 `N×19` 概率；当前使用前 10 项颜色输出。
+- Paddle 与 ONNX Runtime 同 ROI 最大输出误差 `8.34e-7`；独立黑/白车辆样本分别正确输出 `black 0.621165` 和 `white 0.863887`。
+- 610 帧主链路完成 173 次颜色调用，处理吞吐 18.029 FPS，颜色推理 mean/P50/P95 为 5.461/5.385/7.108 ms，工作集 404.301 MiB；仍为 PC CPU，未使用 NPU。
+- 下一阶段实现每路独立 ByteTrack，让颜色结果关联稳定 `track_id`；尚未实现 VehicleFusion、车牌或四路调度。
+
+## 2026-08-20 模块化 C++ 车辆系统 PC Stage 4
+
+- 已新增 `IVehicleTracker/ByteTracker` 和 `TrackedObject`，实现 Kalman、Hungarian、高低分两阶段关联、候选确认、Lost 恢复、类别隔离和超时移除。
+- 主链路已调整为 `Detector → ByteTrack → Cropper → Color`；每个 Tracker 实例独立维护 ID，四路阶段不会复制 AI 模型。
+- 610 帧完成154次已确认轨迹观测，其中14次由低分框维持；Tracker 每帧 mean/P95 为0.026/0.070 ms，端到端16.163 FPS，工作集399.352 MiB。
+- 当前视频中第一辆车保持ID1共80次；后段同车因画面底部盲区和CPU跳帧分成ID2两次、ID3七十二次，作为已知断轨保留，不以过宽阈值掩盖。
+- 下一阶段实现独立 VehicleFusion；尚未实现车牌与四路调度。
+
+## 2026-08-21 模块化 C++ 车辆系统 PC Stage 5
+
+- 已新增独立 `IVehicleFusion/ConfidenceWeightedVehicleFusion`，按 `track_id` 保存最多30个有效颜色样本，以置信度总和选出主色；平均颜色置信度、投票占比和稳定状态分别输出。
+- 默认至少3个有效样本、获胜占比不低于0.60才稳定，低于0.50及`other`默认不参与投票；不把投票第二名伪装成车辆辅色。
+- 610帧完成897个检测、170次轨迹观测/颜色调用/融合更新和164次稳定融合观测；Fusion更新mean/P95为0.005/0.008ms，端到端21.691FPS，工作集409.176MiB，仍为PC CPU。
+- 当前同车仍可能断成不同Track ID；Fusion按ID隔离，不在没有重识别证据时跨ID合并。
+- 下一阶段进入车牌流水线，先独立实现车辆ROI内的`IPlateDetector`和`PlateCropper`并验证已有`best_obb.onnx`。
+
+## 2026-08-21 GitHub 发布范围补充
+
+- `rk3588_vehicle_system` 的一方 C/C++源码、头文件、测试、配置、脚本、阶段报告和目录级忽略规则纳入 `release_manifest.txt`。
+- `build`、`runs`、`third_party`、ONNX/RKNN/Paddle模型、视频和编译产物继续排除，不允许按整个目录无差别上传。
+- 同步器允许在发布 worktree 已有受管且无冲突的未提交内容时安全续传；非白名单文件、删除/重命名/冲突和可能丢失内容的覆盖仍被拒绝。

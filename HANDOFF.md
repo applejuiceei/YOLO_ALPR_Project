@@ -424,3 +424,95 @@ python .\tools\sync_github_release.py --apply
 ```powershell
 python .\tools\sync_github_release.py
 ```
+
+## 2026-08-19 C++ 车辆系统新工作线
+
+新目录：
+
+```text
+D:\YOLO_ALPR_Project\rk3588_vehicle_system
+```
+
+当前已完成 PC Stage 1：单路 CameraManager、最新帧有界队列、可替换 `IVehicleDetector`、Rockchip 优化 YOLO11n ONNX detector、画框视频和 JSON 性能统计。用户确认 `deploy/144.mp4` 与 `测试图/14.mp4` 是同一段测试视频；C++ 程序使用前者的 ASCII 路径以避开 OpenCV 中文视频路径问题。
+
+正式实测：610 个已处理帧、154 个目标框、15.423 FPS、推理 P50/P95 为 51.128/73.548 ms、工作集 390.801 MiB、过期队列帧 560。当前后端是 ONNX Runtime CPU，未使用 RK3588 NPU。目视抽查确认远处和近处 `car` 框合理，但没有足够类别多样性，不能给出整体准确率结论。
+
+详细报告：
+
+```text
+D:\YOLO_ALPR_Project\rk3588_vehicle_system\STAGE1_REPORT.md
+```
+
+继续命令：
+
+```powershell
+cd D:\YOLO_ALPR_Project\rk3588_vehicle_system
+powershell -ExecutionPolicy Bypass -File .\scripts\build_windows.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\run_pc_demo.ps1 -MaxFrames 610 -NoDisplay
+```
+
+下一步严格实现独立 `VehicleCropper` 及其测试，不要提前接颜色、跟踪、车牌或四路；Windows 基准 `alpr_topk_capture.py` 仍不得修改。
+
+## 2026-08-20 C++ VehicleCropper 已完成
+
+`rk3588_vehicle_system` 已推进到 PC Stage 2。新增独立 Cropper 接口与实现，支持边界修正、四方向扩张、最小尺寸过滤、默认浅 ROI 和可选深拷贝；已接入 `vehicle_demo` 并增加单元及图片/视频集成测试。
+
+正式结果：CTest 2/2；独立图片 1 个 ROI；独立视频 180 帧产生 32 个 ROI、0 拒绝；主链路 610 帧产生 172 个 ROI、0 拒绝、保存 64 张，15.741 FPS，Cropper 每帧平均/P95为0.001/0.004 ms。当前仍为 PC CPU，未使用 RK3588 NPU。
+
+详细报告：
+
+```text
+D:\YOLO_ALPR_Project\rk3588_vehicle_system\STAGE2_REPORT.md
+```
+
+下一步只进入车辆颜色模块：优先取得并核对 PP-Vehicle/PPLCNet 预训练模型协议，完成 ONNX Runtime 独立分类测试后再接主程序。不要使用伪颜色结果，也不要提前加入 ByteTrack 或车牌。
+
+## 2026-08-20 C++ 车辆颜色模块已完成
+
+`rk3588_vehicle_system` 已推进到 PC Stage 3。官方 PP-Vehicle PP-LCNet 车辆属性模型已转换为 ONNX，并通过独立 `IVehicleColorClassifier` 接口接入 C++ 主程序；模型输出是真实推理结果，不是颜色占位符。
+
+独立黑/白 ROI 分别输出 `black 0.621165`、`white 0.863887`；610 帧主链路完成 173 次颜色调用，处理吞吐 18.029 FPS，颜色推理 mean/P50/P95 为 5.461/5.385/7.108 ms，工作集 404.301 MiB。当前仍为 Windows ONNX Runtime CPU，未使用 RK3588 NPU，不能外推板端性能或整体颜色准确率。
+
+详细报告：
+
+```text
+D:\YOLO_ALPR_Project\rk3588_vehicle_system\STAGE3_REPORT.md
+```
+
+下一步严格实现独立 C++ ByteTrack：每个 Camera 自己维护 Track ID，并把检测、ROI 与颜色结果关联到 `TrackedObject`。ByteTrack 通过后再实现 VehicleFusion；不要提前接车牌或四路。
+
+## 2026-08-20 C++ ByteTrack 已完成
+
+`rk3588_vehicle_system` 已推进到 PC Stage 4。新增独立 `IVehicleTracker/ByteTracker`，实现 Kalman、Hungarian、高低分两阶段关联、未确认轨迹、Lost恢复、类别隔离和超时移除；主链路为 `Detector → ByteTrack → Cropper → Color`。
+
+610帧正式结果：893个>=0.10检测、148个>=0.40检测、154次已确认轨迹观测，其中14次由低分框维持；Tracker每帧mean/P95为0.026/0.070ms，端到端16.163FPS，工作集399.352MiB，仍未使用NPU。ID1连续80次；后段同车在画面底部和CPU跳帧处被分成ID2两次、ID3七十二次，这是当前已知限制。
+
+详细报告：
+
+```text
+D:\YOLO_ALPR_Project\rk3588_vehicle_system\STAGE4_REPORT.md
+```
+
+下一步实现独立 VehicleFusion：按 `track_id` 收集颜色并做置信度加权投票，业务层不再把单帧颜色直接当最终颜色。完成后再进入车牌流水线。
+
+## 2026-08-21 C++ VehicleFusion 已完成
+
+`rk3588_vehicle_system` 已推进到PC Stage 5：主链路为`Camera → YOLO11n ONNX → ByteTrack → VehicleCropper → PP-Vehicle颜色 → VehicleFusion`。Fusion接口、实现和独立单测均已落地，CTest 4/4通过。
+
+610帧正式结果：21.691FPS，897个检测，170次已确认轨迹观测和融合更新，164次稳定融合观测，3个Track ID达到稳定；Fusion更新mean/P95为0.005/0.008ms，工作集409.176MiB，NPU未使用。输出位于`rk3588_vehicle_system/runs/pc_stage5_vehicle_fusion/`，详细报告为`rk3588_vehicle_system/STAGE5_REPORT.md`。
+
+已知边界：后段同一车辆仍可能由Tracker分裂为不同ID，Fusion不会跨ID猜测合并；视频基本只有白色车辆，不能据此证明多颜色准确率。
+
+下一步从车牌流水线开始，先阅读已有`best_obb.onnx/rknn`相关脚本和模型协议，只实现车辆ROI内的`IPlateDetector`与`PlateCropper`并做独立测试。不要一次接入OCR、四路或RKNN，也不要修改`alpr_topk_capture.py`。
+
+## 2026-08-21 C++ 车辆系统加入 GitHub 发布白名单
+
+`release_manifest.txt` 已精确包含 `rk3588_vehicle_system` 的 CMake、一方源码/头文件、测试、配置、脚本、阶段报告和嵌套 `.gitignore`。不要改成整个目录递归复制；`build`、`runs`、`third_party`、模型、视频和编译产物必须继续留在本地或外部备份。
+
+日常命令不变：
+
+```powershell
+python D:\YOLO_ALPR_Project\tools\sync_github_release.py --apply
+```
+
+发布 worktree 已有未提交内容时，同步器只允许白名单内且不会丢失内容的安全续传；出现非白名单文件、删除/重命名或内容冲突时会拒绝运行。同步完成后仍需在 VS Code 中人工检查、暂存、提交和推送。

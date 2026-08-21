@@ -265,3 +265,50 @@ rkisp0-vir0: check rkisp_mainpath link or isp input
 - 新增 `tools/sync_github_release.py`，默认 dry-run；使用 `--apply` 时先验证目标是干净的 `codex/github-release` worktree，再执行新增/更新复制。
 - 同步器不删除目标文件，不自动暂存、提交或推送；单文件硬上限为 95 MiB，并检查禁止目录、文件类型、敏感文件名和常见凭据格式。
 - Windows 基准 `alpr_topk_capture.py` 未修改；现有 `.idea/vcs.xml` 和运行结果目录不在白名单中，不会被同步。
+
+## 2026-08-19 C++ PC Stage 1 实测
+
+- Visual Studio 2022 Build Tools、MSVC v143、Windows SDK、CMake 和 Ninja 已安装并通过 x64 Hello World 验证；OpenCV 4.12.0 与 ONNX Runtime 1.29.0 C++ 依赖已校验并解压到新工程的 `third_party/prebuilt`。
+- `rk3588_vehicle_system` Release 构建成功，CTest 1/1 通过，独立道路图片检测出 `car 0.81` 且框位置目视合理。
+- 对 `deploy/144.mp4`（用户确认与 `测试图/14.mp4` 为同一测试视频）跑 610 个已处理帧：154 个目标框、15.423 FPS、推理平均/P50/P95 为 53.446/51.128/73.548 ms、工作集 390.801 MiB。
+- 当前是 ONNX Runtime CPU，`npu_used=false`；约 30 FPS 输入下丢弃 560 个过期队列帧，说明单路 CPU detector 尚不足以逐帧跟上视频。
+- 详细 15 项报告位于 `rk3588_vehicle_system/STAGE1_REPORT.md`；下一步按顺序实现独立 `VehicleCropper`。
+
+## 2026-08-20 C++ PC Stage 2 VehicleCropper
+
+- 新增 `IVehicleCropper/VehicleCropper`、`VehicleCrop` 标准类型、Cropper 配置、单元测试和图片/视频独立集成测试；默认浅 ROI，不执行额外图像复制。
+- CTest 2/2 通过；真实图片 1/1 个 ROI，独立视频 180 帧产生 32/32 个有效 ROI，均无拒绝。
+- 610 帧主链路产生 172/172 个有效车辆 ROI并保存前64张；15.741 FPS、工作集391.449 MiB，Cropper 每帧平均/P95为0.001/0.004 ms。
+- 当前仍是 Windows ONNX Runtime CPU，未使用 NPU；详细报告为 `rk3588_vehicle_system/STAGE2_REPORT.md`。
+- 下一步按顺序处理 PP-Vehicle/PPLCNet 颜色模型，不提前接入跟踪和车牌。
+
+## 2026-08-20 C++ PC Stage 3 车辆颜色
+
+- 已新增 `IVehicleColorClassifier`、`PpVehicleOnnxColorClassifier`、标准 `ColorResult`、配置项、独立测试和可复现转换脚本，并接入 `vehicle_demo`。
+- 使用官方 PP-Vehicle PP-LCNet 车辆属性模型；ONNX SHA256 为 `47770502245FE0971E9E0D77FDDD5FB952C288FF26133FD5F199F11A001D25B8`，复现转换哈希一致，ONNX Checker 通过。
+- 独立黑/白 ROI 测试通过；610 帧完成 173 次真实颜色分类，0 个无效裁剪、1 个低阈值 `other`，画面可见 `car ... white ...` 标签。
+- 端到端 18.029 FPS、工作集 404.301 MiB；颜色实际调用推理 P50/P95 为 5.385/7.108 ms。当前为 ONNX Runtime CPU，`npu_used=false`。
+- 详细报告为 `rk3588_vehicle_system/STAGE3_REPORT.md`；下一步实现独立 C++ ByteTrack，不提前接车牌。
+
+## 2026-08-20 C++ PC Stage 4 ByteTrack
+
+- 新增标准 `IVehicleTracker`、C++ `ByteTracker`、`TrackedObject`、Tracker 配置和独立单测；主链路已按 Detector、Tracker、Cropper、Color 顺序运行。
+- CTest 3/3通过；跟踪单测覆盖高/低分关联、候选确认、Lost恢复、类别隔离、超时、reset及两个Camera实例独立ID。
+- 610帧输入893个>=0.10检测、148个>=0.40检测，输出154次已确认轨迹，其中14次低分维持；Tracker每帧mean/P95为0.026/0.070ms。
+- 端到端16.163 FPS、工作集399.352 MiB，仍为Windows CPU；详细报告为 `rk3588_vehicle_system/STAGE4_REPORT.md`。
+- 当前后段车辆在画面底部盲区和跳帧处由ID2断为ID3；下一步实现VehicleFusion，同时保留该断轨作为调度/参数优化样本。
+
+## 2026-08-21 C++ PC Stage 5 VehicleFusion
+
+- 新增独立`IVehicleFusion/ConfidenceWeightedVehicleFusion`、`VehicleFusionResult`、配置项和单测；主链路已更新为Detector、Tracker、Cropper、Color、Fusion。
+- CTest 4/4通过；单测覆盖置信度加权、稳定门槛、低分/`other`过滤、Track隔离、重复帧拒绝、滚动窗口、过期清理和reset。
+- 610帧输入897个检测，产生170次轨迹观测/颜色调用/融合更新、164次稳定融合观测，3个Track ID达到稳定。
+- 端到端21.691FPS、CPU单核等效100.001%、工作集409.176MiB；Fusion更新mean/P95为0.005/0.008ms，NPU未使用。
+- 已知问题：224个过期源帧被丢弃；同车仍可能断成多个Track ID，Fusion不跨ID合并；测试视频颜色单一，颜色准确率待多样本确认。
+- 详细报告为`rk3588_vehicle_system/STAGE5_REPORT.md`；下一步先实现车辆ROI内的`IPlateDetector`和`PlateCropper`。
+
+## 2026-08-21 GitHub 发布同步补充
+
+- 已将 `rk3588_vehicle_system` 的一方源码、头文件、测试、配置、PowerShell/Python脚本、阶段文档和嵌套 `.gitignore` 加入发布白名单。
+- 白名单只覆盖明确的源码路径；该目录内的构建树、运行结果、第三方预编译依赖、模型二进制和媒体文件继续排除。
+- `tools/sync_github_release.py` 新增受管未提交文件安全续传：内容相同或仅由源文件追加时允许继续，其余冲突拒绝覆盖。

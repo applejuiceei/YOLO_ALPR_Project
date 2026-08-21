@@ -1,0 +1,13 @@
+/build/
+/runs/
+/third_party/prebuilt/
+/third_party/python_conversion/
+/models/**/*.onnx
+/models/**/*.rknn
+/models/**/*.zip
+/models/**/*.pdmodel
+/models/**/*.pdiparams
+/models/**/*.pdiparams.info
+*.user
+*.suo
+*.VC.db
