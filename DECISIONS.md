@@ -558,3 +558,101 @@
 - 新 C++ 主线位于原白名单未覆盖的子目录，导致同步时只出现项目记忆 Markdown 变化，而核心 C++ 文件未进入发布工作区。
 - 该目录同时含约百 MiB DLL、近 GiB 视频、PDB、第三方依赖和模型产物，整目录复制会破坏轻量发布与 GitHub 大文件保护目标。
 - 内容保持型续传可以在不覆盖人工工作前提下，把同一批源码加入已经存在受管文档修改的发布工作区。
+
+## 决定 40：车牌检测保留 OBB 几何并只运行于车辆 ROI
+
+决定：
+
+- PlateDetector统一依赖`IPlateDetector`，业务输入固定为VehicleCropper产生的车辆ROI，不对整张1080P画面重复运行车牌模型。
+- PC实现复用现有Ultralytics YOLO11 OBB ONNX；严格核对`1×3×320×320`输入与`1×6×2100`输出，并按`xywh/confidence/angle`解码。
+- 旋转框抑制使用与Ultralytics协议一致的ProbIoU，而不是把轴对齐IoU直接套在OBB候选上。
+- `PlateDetection`除用户要求的bbox/confidence外继续保留四角点和弧度角；PlateCropper将四角点转换到crop坐标系，供后续`IPlateRectifier`透视变换使用。
+- PlateCropper当前只做轴对齐、默认浅引用的几何裁剪；不提前混入质量评价、增强、HSV颜色或OCR。
+
+原因：
+
+- 车辆ROI能显著减少背景搜索范围，也符合后续四路统一AI调度的计算预算。
+- OBB模型已经提供车牌方向和四角几何，若当前阶段只保留水平bbox，后续透视矫正将丢失关键信息。
+- 610帧实测69个检测全部成功裁剪，PlateCropper约0.002ms/次；当前主要新增成本是PC CPU PlateDetector约19.876ms/次。
+
+## 决定 41：车牌质量采用硬门槛与归一化综合分组合
+
+决定：
+
+- 质量评价统一依赖`IPlateQualityEvaluator`；第一版使用OpenCV CPU，不与PlateDetector、Rectifier或OCR耦合。
+- 输出同时保留原始Laplacian方差、亮度、对比度以及`[0,1]`子分和综合分，不能把不同量纲的原始数值直接相加。
+- 拒绝顺序固定为尺寸、清晰度、亮度、对比度、综合分；默认最小尺寸`24×8`，尺寸不足时即使Laplacian很高也不放行。
+- 被拒绝crop仍按配置保存并记录原因；`acceptable=true`只表示后续OCR候选，不解释为车牌识别成功。
+- 所有门槛、参考值和权重放在`config.yaml`，后续可用实拍真值集标定而不修改业务代码。
+
+原因：
+
+- 当前真实crop宽度中位数只有24像素，极小图会因插值锯齿出现异常高Laplacian，仅靠清晰度容易误判。
+- 610帧中40/73个crop因尺寸不足被拒绝；通过样本字符明显更完整，拒绝样本信息量不足。
+- 质量模块mean/P95仅0.056/0.107ms，保持独立接口不会形成当前性能瓶颈，并为后续Top-K与OCR调用节流提供标准输入。
+
+## 决定 42：PlateRectifier 消费四角几何并显式报告矫正方式
+
+决定：
+
+- Rectifier统一依赖`IPlateRectifier`，输入完整`PlateCrop`而不是只有`cv::Mat`，避免丢失PlateDetector已经提供的OBB四角点。
+- OpenCV实现不依赖Detector角点数组顺序：先校验范围、凸包、面积和边长，再归一为左上、右上、右下、左下。
+- 第一版同时保留`resize`和`perspective`模式；透视几何无效时是否回退resize由配置决定，输出`method`明确区分真实透视、resize和回退。
+- 主链路只对质量通过样本调用Rectifier，默认输出BGR`320×96`；被质量拒绝的样本不做无意义放大。
+- 当前使用OpenCV CPU；后续RGA、STN或RKNN实现必须复用接口，不修改OCR业务层。
+
+原因：
+
+- OBB四角点可以同时完成旋转校正和透视归一，若先丢成水平bbox再resize，会浪费已有几何信息。
+- 明确记录矫正方式能防止无效角点回退被误报为透视成功，并为OCR A/B保留诊断依据。
+- 610帧真实样本28/28透视成功，正式P95仅0.718ms；当前主要限制仍是PC CPU模型和异步丢帧。
+
+## 决定 43：HSV车牌颜色使用互斥像素类别与保守拒绝
+
+决定：
+
+- 车牌颜色统一依赖`IPlateColorClassifier`，第一版`HsvPlateColorClassifier`只接收Rectifier输出图，不读取Detector类别或车辆颜色，后续深度学习实现可直接替换。
+- 黑、白和彩色像素使用互斥的V/S门槛；黄、绿、蓝使用互不重叠的OpenCV Hue范围，避免同一像素重复计票。
+- 忽略可配置的窄边缘后，以有效内区总像素为分母计算覆盖率；只有最大覆盖率和第一/第二候选优势差同时达标才输出具体颜色，否则输出`other`。
+- `confidence`只是像素覆盖率诊断值，不解释为校准概率；褪色、过曝或模糊样本允许保守输出`other`，不得为迎合已知蓝牌视频强制修正规则。
+- 当前不做PlateFusion；逐Track多帧颜色融合留到单帧OCR链路验证后按既定顺序实现。
+
+原因：
+
+- Stage 8历史28张真实牌中27张稳定输出蓝色，1张因严重褪色出现蓝/白覆盖率相同而输出other，保守拒绝比无证据强行标蓝更可解释。
+- 正式610帧42次分类的P95仅0.123ms，不构成当前性能瓶颈；无需为该模块引入额外NPU模型。
+- 当前真实样本没有黄牌、绿牌、白牌和黑牌真值，合成协议测试只能证明实现逻辑，不能代表真实准确率。
+
+## 决定 44：C++ HyperLPR3 保持官方协议并区分原始候选与业务接收
+
+决定：
+
+- 车牌识别统一依赖`IPlateRecognizer`；Windows第一版使用`HyperLpr3OnnxPlateRecognizer`，业务层不得依赖ONNX具体张量。
+- HyperLPR3 0.1.3的`rpv3_mdict_160_r3.onnx`按其源码实际行为使用BGR输入，不擅自改为RGB；预处理、CTC blank、重复折叠和平均字符置信度必须与Python官方实现对齐。
+- 该模型实际输出`1×20×78`，官方token列表含blank共77项。未映射索引77不得补造字符，若命中则以`unknown_token`拒绝并保留诊断。
+- `PlateOCRResult`同时保留原始`text/confidence`和`format_valid/accepted/rejection_reason`；格式或阈值拒绝不能擦除原始候选，也不能输出占位车牌。
+- 视频标签因OpenCV默认字体限制只显示`CN:`加ASCII部分；完整UTF-8中文必须写入JSONL。该显示限制不能误报为OCR没有省份字符。
+- 单帧接收结果不是最终号码；PlateFusion完成前不生成最终Plate字段。
+
+原因：
+
+- 基准图C++与Python均输出`苏E803JV 0.999943`，证明当前协议对齐。
+- 610帧中Track 4同时产生`冀B6R9F9`、`黑B6R9F9`等合法高置信度候选；只靠格式和单帧置信度无法消除省份抖动。
+- 保留原始候选、拒绝原因和按Track统计，才能为下一阶段Top-K质量筛选、字符串投票及模型替换提供可追溯输入。
+
+## 决定 45：PlateFusion 只投票完整观察字符串并独立渲染 UTF-8 标签
+
+决定：
+
+- PlateFusion统一依赖`IPlateFusion`，每路Camera建立独立实例并按本路`track_id`隔离；禁止在没有重识别证据时跨Track合并历史。
+- 号码只接收质量、格式和OCR置信度均通过的观察，权重固定为`quality_score × OCR confidence`；从质量最高Top-K中选择真实出现过的完整字符串，不进行逐字符拼接或人工修正。
+- 默认稳定需要至少3个有效样本、获胜号码出现至少2次且权重占比不低于0.50；未稳定时显示最新有效单帧号码，稳定后才切换融合号码。
+- 车牌颜色使用独立样本和`quality_score × color confidence`权重，默认排除`other`；同Track同帧的号码和颜色分别只保留权重最高者。
+- 业务层依赖`IUtf8TextRenderer`；Windows实现使用严格UTF-8到UTF-16转换、系统微软雅黑和GDI小标签绘制，Linux/RK3588后续提供FreeType实现。JSONL始终保留原始UTF-8。
+
+原因：
+
+- 多帧加权可以抑制偶发字符抖动，但逐字符合成可能制造从未被模型观察到的号码，缺少可追溯性。
+- 最新有效结果让不稳定阶段仍有可观察输出，而明确的`车牌(单帧)`标签避免把它误当成稳定融合结论。
+- OpenCV默认字体不支持中文；UTF-8直接传给`putText`会出现问号或乱码。独立Unicode接口既解决Windows显示，也避免业务层绑定Windows API。
+- 610帧中Track 3虽连续两次输出`冀B6R9F9`，仍因总样本不足3次而保持未稳定；Track切换后没有跨ID凑票，符合隔离原则。

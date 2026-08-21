@@ -224,8 +224,53 @@
 - 当前同车仍可能断成不同Track ID；Fusion按ID隔离，不在没有重识别证据时跨ID合并。
 - 下一阶段进入车牌流水线，先独立实现车辆ROI内的`IPlateDetector`和`PlateCropper`并验证已有`best_obb.onnx`。
 
+## 2026-08-21 模块化 C++ 车辆系统 PC Stage 6
+
+- 已新增独立`IPlateDetector/YoloObbOnnxPlateDetector`和`IPlateCropper/PlateCropper`，车牌检测只接收VehicleCropper输出的车辆ROI，不扫描整张1080P图像。
+- 复用现有单类YOLO11 OBB `best_obb.onnx`，输入`1×3×320×320`，输出`1×6×2100`；C++解析`xywh/confidence/angle`并使用ProbIoU旋转框NMS。
+- `PlateDetection`保留轴对齐bbox、四角点、置信度和弧度角；`PlateCrop`保留浅ROI与裁剪坐标系四角点，为后续透视拉正留出接口。
+- 610帧正式结果：128次车牌模型调用，69个车牌检测和69个有效crop，0无效crop；端到端17.961FPS，PlateDetector推理mean/P50/P95为19.876/19.094/25.072ms，工作集439.469MiB，仍未使用NPU。
+- 当前仅实测蓝牌；黄牌/绿牌覆盖待确认，且低质量远景牌尚未过滤。下一阶段实现独立`PlateQualityEvaluator`。
+
+## 2026-08-21 模块化 C++ 车辆系统 PC Stage 7
+
+- 已新增独立`IPlateQualityEvaluator/OpenCvPlateQualityEvaluator`，输出尺寸、Laplacian方差、亮度、对比度、归一化综合分、通过状态和拒绝原因。
+- 默认先执行`24×8`尺寸硬门槛，再检查清晰度、亮度、对比度与综合分，避免微小图的像素锯齿产生虚高Laplacian而误放行。
+- 610帧完成73次质量评价，33次通过、40次因尺寸不足拒绝；评价mean/P95为0.056/0.107ms，端到端18.236FPS，工作集435.910MiB。
+- 当前仍为Windows CPU、未使用NPU；通过只代表可进入后续OCR，不代表号码识别正确。下一步只实现`IPlateRectifier`。
+
+## 2026-08-21 模块化 C++ 车辆系统 PC Stage 8
+
+- 已新增独立`IPlateRectifier/OpenCvPlateRectifier`，使用PlateCrop局部四角点完成顺序无关的旋转/透视拉正，并保留resize基线与无效几何回退。
+- 默认输出BGR`320×96`；只有质量通过样本进入Rectifier，拒绝样本继续保留诊断，不调用后续模块。
+- 610帧中28个质量通过样本全部Perspective成功，0回退、0失败；Rectifier mean/P50/P95为0.530/0.494/0.718ms，端到端17.326FPS。
+- 当前仍为Windows CPU，未接车牌颜色和OCR。下一步只实现`HSVPlateColorClassifier`。
+
 ## 2026-08-21 GitHub 发布范围补充
 
 - `rk3588_vehicle_system` 的一方 C/C++源码、头文件、测试、配置、脚本、阶段报告和目录级忽略规则纳入 `release_manifest.txt`。
 - `build`、`runs`、`third_party`、ONNX/RKNN/Paddle模型、视频和编译产物继续排除，不允许按整个目录无差别上传。
 - 同步器允许在发布 worktree 已有受管且无冲突的未提交内容时安全续传；非白名单文件、删除/重命名/冲突和可能丢失内容的覆盖仍被拒绝。
+
+## 2026-08-21 模块化 C++ 车辆系统 PC Stage 9
+
+- 已新增独立`IPlateColorClassifier/HsvPlateColorClassifier`，输入Rectifier输出的BGR车牌图，输出`blue/yellow/green/white/black/other`与覆盖率置信度。
+- HSV阈值、内区边距、最低覆盖率和候选优势差均在`config.yaml`中配置；颜色模块不依赖PlateDetector、Rectifier或后续OCR具体实现。
+- 610帧完成42次颜色分类：37蓝、3白、2其他；自身mean/P50/P95为0.091/0.086/0.123ms，端到端17.880FPS，工作集449.234MiB，仍为Windows CPU。
+- 真实视频只覆盖蓝牌场景；3白和2其他均为严重模糊/低饱和样本且无人工真值，不能据此宣称颜色准确率。下一步只实现HyperLPR3纯识别后端。
+
+## 2026-08-21 模块化 C++ 车辆系统 PC Stage 10
+
+- 已新增可替换`IPlateRecognizer/HyperLpr3OnnxPlateRecognizer`，只消费质量通过且完成透视矫正的车牌图，输出UTF-8中文候选、置信度、格式状态、接收状态和拒绝原因。
+- 使用HyperLPR3 0.1.3自带`rpv3_mdict_160_r3.onnx`；实际协议为BGR float32`1×3×48×160`输入和`1×20×78`输出，C++预处理/CTC解码已与Python官方实现对齐。
+- 基准图Python与C++均输出`苏E803JV 0.999943`；CTest 9/9通过。
+- 610帧正式链路完成20次OCR，13次通过、7次因格式拒绝；端到端15.382FPS，OCR推理mean/P50/P95为18.258/17.043/24.439ms，工作集455.980MiB，仍为Windows CPU。
+- 同一Track的合法单帧文本存在省份和末位抖动，证明格式合法/高置信度不代表整牌正确。下一步只实现独立PlateFusion，不提前扩展四路。
+
+## 2026-08-21 模块化 C++ 车辆系统 PC Stage 11
+
+- 已新增`IPlateFusion/ConfidenceWeightedPlateFusion`，按Camera本地`track_id`隔离历史，并对号码和颜色分别使用`quality_score × confidence`加权投票。
+- 默认保存30个历史样本、对质量最高10个投票；至少3个有效号码样本、获胜号码出现2次且权重占比不低于0.50时才稳定。只选择真实出现过的完整号码，不跨Track、不按字符合成。
+- 未稳定时业务标签显示最新有效`车牌(单帧)`，稳定后自动切换融合`车牌`；Windows新增GDI/微软雅黑UTF-8渲染，完整中文已显示在车辆框上方，不再出现`浜珹/璞獼`或问号。
+- CTest 11/11通过；610帧完成22次OCR/PlateFusion更新，11次OCR通过格式与置信度门槛，端到端12.623FPS，CPU单核等效100.001%，工作集459.789MiB，NPU未使用。
+- 本轮没有Track达到稳定门槛：Track 1有效号码分散，Track 3只有两个相同样本，且后续断为Track 4；该结果验证了Track隔离而不是融合失效。下一步生成统一`VehicleEvent` JSON，不提前扩展四路。

@@ -55,11 +55,120 @@ vehicle_fusion:
   stale_after_frames: 60
   include_other: 0
 
+plate_detector:
+  backend: "onnxruntime"
+  model: "models/plate_detector/best_obb.onnx"
+  input_width: 320
+  input_height: 320
+  confidence: 0.25
+  nms: 0.45
+  max_detections: 3
+  intra_op_threads: 2
+
+plate_cropper:
+  expand_left: 0.0
+  expand_right: 0.0
+  expand_top: 0.0
+  expand_bottom: 0.0
+  min_width: 8
+  min_height: 4
+  clone_output: 0
+
+plate_quality:
+  backend: "opencv"
+  # 尺寸是硬门槛；微小图即使 Laplacian 偏高，也不进入后续 OCR。
+  min_width: 24
+  min_height: 8
+  target_width: 64
+  target_height: 20
+  min_blur_score: 20.0
+  min_brightness: 30.0
+  max_brightness: 245.0
+  target_brightness: 127.5
+  min_contrast: 10.0
+  sharpness_reference: 10000.0
+  contrast_reference: 48.0
+  min_quality_score: 0.50
+  size_weight: 0.40
+  sharpness_weight: 0.25
+  exposure_weight: 0.20
+  contrast_weight: 0.15
+
+plate_rectifier:
+  backend: "opencv"
+  mode: "perspective"
+  output_width: 320
+  output_height: 96
+  min_edge_length: 2.0
+  min_quadrilateral_area: 16.0
+  corner_tolerance: 2.0
+  max_abs_rotation_degrees: 60.0
+  fallback_to_resize: 1
+
+plate_color:
+  backend: "hsv"
+  # 忽略透视拉正后的窄边缘，减少边框和车辆背景对底色统计的干扰。
+  roi_margin_x_ratio: 0.03
+  roi_margin_y_ratio: 0.05
+  min_saturation: 25
+  chromatic_min_value: 70
+  white_max_saturation: 24
+  white_min_value: 140
+  black_max_value: 69
+  yellow_hue_min: 15
+  yellow_hue_max: 34
+  green_hue_min: 35
+  green_hue_max: 89
+  blue_hue_min: 90
+  blue_hue_max: 140
+  min_coverage: 0.30
+  min_dominance_margin: 0.05
+
+plate_recognizer:
+  backend: "onnxruntime"
+  model: "models/plate_recognizer/rpv3_mdict_160_r3.onnx"
+  input_width: 160
+  input_height: 48
+  # 与HyperLPR3 0.1.3官方PPRCNNRecognitionORT保持一致：OpenCV BGR直接归一化。
+  input_color_order: "bgr"
+  min_confidence: 0.50
+  min_text_length: 7
+  max_text_length: 8
+  require_standard_format: 1
+  intra_op_threads: 2
+  warmup_runs: 1
+
+plate_fusion:
+  backend: "confidence_weighted"
+  max_history_per_track: 30
+  top_k: 10
+  min_samples: 3
+  min_winner_samples: 2
+  min_ocr_confidence: 0.50
+  min_quality_score: 0.50
+  min_vote_ratio: 0.50
+  min_color_confidence: 0.30
+  stale_after_frames: 60
+  include_other_color: 0
+
+text_renderer:
+  backend: "windows_gdi"
+  font_family: "Microsoft YaHei"
+  font_height: 22
+  horizontal_padding: 6
+  vertical_padding: 3
+
 runtime:
   display: 1
   max_frames: 610
   report_interval: 60
-  output_video: "runs/pc_stage5_vehicle_fusion/annotated.mp4"
-  summary_json: "runs/pc_stage5_vehicle_fusion/summary.json"
-  vehicle_roi_dir: "runs/pc_stage5_vehicle_fusion/vehicle_rois"
+  output_video: "runs/pc_stage11_plate_fusion/annotated.mp4"
+  summary_json: "runs/pc_stage11_plate_fusion/summary.json"
+  vehicle_roi_dir: "runs/pc_stage11_plate_fusion/vehicle_rois"
   max_saved_vehicle_rois: 64
+  plate_roi_dir: "runs/pc_stage11_plate_fusion/plate_rois"
+  max_saved_plate_rois: 128
+  rectified_plate_dir: "runs/pc_stage11_plate_fusion/rectified_plates"
+  max_saved_rectified_plates: 128
+  ocr_results_jsonl: "runs/pc_stage11_plate_fusion/recognition_results.jsonl"
+  plate_fusion_results_jsonl: "runs/pc_stage11_plate_fusion/plate_fusion_results.jsonl"

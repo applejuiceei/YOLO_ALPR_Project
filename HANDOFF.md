@@ -516,3 +516,59 @@ python D:\YOLO_ALPR_Project\tools\sync_github_release.py --apply
 ```
 
 发布 worktree 已有未提交内容时，同步器只允许白名单内且不会丢失内容的安全续传；出现非白名单文件、删除/重命名或内容冲突时会拒绝运行。同步完成后仍需在 VS Code 中人工检查、暂存、提交和推送。
+
+## 2026-08-21 C++ PlateDetector + PlateCropper 已完成
+
+`rk3588_vehicle_system`已推进到PC Stage 6。主链路现在为`Camera → VehicleDetector → ByteTrack → VehicleCropper → Color/Fusion → PlateDetector → PlateCropper`；尚未进入车牌质量、矫正、颜色和OCR。
+
+PlateDetector使用`models/plate_detector/best_obb.onnx`，输入RGB float32`1×3×320×320`，输出`1×6×2100`的`xywh/confidence/angle`；C++使用ProbIoU OBB NMS并保留四角点。模型SHA256为`4AD061EA0034182C534FDB6970E3053B84FEB8EE2D92B76C6967F85B94F14BB0`。
+
+610帧正式结果：128次PlateDetector调用，69个车牌检测、69个有效crop、0个无效crop，PlateDetector推理mean/P50/P95为19.876/19.094/25.072ms，端到端17.961FPS，工作集439.469MiB，NPU未使用。输出在`rk3588_vehicle_system/runs/pc_stage6_plate_detection/`，报告为`STAGE6_REPORT.md`。
+
+已知边界：本轮丢弃398个过期帧；当前只确认蓝牌命中，黄牌/绿牌待测；PlateCropper尚未透视拉正，低质量远景crop未过滤；输出目录含先前冒烟文件，正式计数只看最新summary；模型元数据为AGPL-3.0，产品发布前需确认许可。
+
+下一步只实现独立`PlateQualityEvaluator`，覆盖Laplacian清晰度、尺寸、亮度、对比度和统一quality_score，并在送入后续OCR前提供明确质量门槛。不要跳到OCR，也不要修改`alpr_topk_capture.py`。
+
+## 2026-08-21 C++ PlateQualityEvaluator 已完成
+
+`rk3588_vehicle_system`已推进到PC Stage 7。主链路为`Camera → VehicleDetector → ByteTrack → VehicleCropper → Color/Fusion → PlateDetector → PlateCropper → PlateQualityEvaluator`；尚未接入Rectifier、车牌颜色或OCR。
+
+模块使用OpenCV CPU计算Laplacian方差、亮度、对比度、尺寸子分和统一quality_score，默认先以`24×8`做尺寸硬过滤。610帧完成73次评价，33次通过、40次因尺寸不足拒绝；评价mean/P95为0.056/0.107ms，端到端18.236FPS，工作集435.910MiB，NPU未使用。CTest 6/6通过，产物在`rk3588_vehicle_system/runs/pc_stage7_plate_quality/`，报告为`STAGE7_REPORT.md`。
+
+下一步只实现独立`IPlateRectifier`。优先使用现有OBB四角点保留透视拉正接口，并提供resize基线和确定性测试；不要把质量通过当成OCR成功，也不要修改`alpr_topk_capture.py`。
+
+## 2026-08-21 C++ PlateRectifier 已完成
+
+`rk3588_vehicle_system`已推进到PC Stage 8。主链路为`Camera → VehicleDetector → ByteTrack → VehicleCropper → Color/Fusion → PlateDetector → PlateCropper → PlateQualityEvaluator → PlateRectifier`；仍未接入车牌颜色或OCR。
+
+Rectifier输入完整PlateCrop并使用ROI局部四角点，默认输出BGR`320×96`；支持resize、Perspective及无效几何resize回退，且不依赖Detector角点数组原顺序。CTest 7/7通过；610帧中28个质量通过样本全部Perspective成功，0回退、0失败，Rectifier mean/P50/P95为0.530/0.494/0.718ms，端到端17.326FPS，工作集440.609MiB，NPU未使用。报告为`rk3588_vehicle_system/STAGE8_REPORT.md`。
+
+下一步只实现`IPlateColorClassifier/HSVPlateColorClassifier`，输入使用RectifiedPlate图像，输出蓝/黄/绿/白/黑/其他及置信度。完成独立测试后再考虑HyperLPR3纯识别；不要修改`alpr_topk_capture.py`。
+
+## 2026-08-21 C++ HSVPlateColorClassifier 已完成
+
+`rk3588_vehicle_system`已推进到PC Stage 9。主链路为`Camera → VehicleDetector → ByteTrack → VehicleCropper → Color/Fusion → PlateDetector → PlateCropper → PlateQualityEvaluator → PlateRectifier → HSVPlateColorClassifier`；仍未接OCR或PlateFusion。
+
+车牌颜色模块输入Rectifier的BGR图，使用互斥HSV区间和覆盖率/优势差判定，输出蓝/黄/绿/白/黑/其他。CTest 8/8通过；610帧完成42次分类，37蓝、3白、2其他，分类mean/P50/P95为0.091/0.086/0.123ms，端到端17.880FPS，工作集449.234MiB，NPU未使用。3白/2其他样本严重模糊或低饱和且无人工真值，真实多颜色准确率待确认。报告为`rk3588_vehicle_system/STAGE9_REPORT.md`。
+
+下一步只实现`IPlateRecognizer`和HyperLPR3纯识别后端：输入矫正后的`320×96` BGR图，输出真实中文车牌文本与置信度。先做单图和历史crop A/B，再接主链路；不得把格式合法、高置信度或占位文本当成识别正确，也不要修改`alpr_topk_capture.py`。
+
+## 2026-08-21 C++ HyperLPR3 PlateRecognizer 已完成
+
+`rk3588_vehicle_system`已推进到PC Stage 10。主链现在为`Camera → VehicleDetector → ByteTrack → VehicleCropper → VehicleColor/Fusion → PlateDetector → PlateCropper → PlateQuality → PlateRectifier → PlateColor + PlateRecognizer`；尚未实现PlateFusion和最终VehicleEvent。
+
+识别模块为`IPlateRecognizer/HyperLpr3OnnxPlateRecognizer`，使用`models/plate_recognizer/rpv3_mdict_160_r3.onnx`，SHA256=`8FB08B5DB2ADECCF43B05006BBBF409E4659D08D72E46A62631C00FF751EAEB3`。实际协议是BGR float32`1×3×48×160`输入和float32`1×20×78`输出；C++已按HyperLPR3 0.1.3源码实现等比例补零、归一化和CTC解码。Python/C++基准图均为`苏E803JV 0.999943`，CTest 9/9通过。
+
+610帧正式结果：20次OCR全部非空，13次通过格式/0.50门槛，7次因格式拒绝；OCR推理mean/P50/P95为18.258/17.043/24.439ms，端到端15.382FPS，CPU单核等效100.000%，工作集455.980MiB，NPU未使用。完整结果在`runs/pc_stage10_plate_recognizer/recognition_results.jsonl`，报告为`STAGE10_REPORT.md`。
+
+同一Track已观察到省份和字符抖动，例如Track 4同时输出`冀B6R9F9`与`黑B6R9F9`；这些是原始单帧事实，不得人工修正或直接写成最终车牌。下一步只实现独立`IPlateFusion`：按Track ID、质量分和OCR置信度做Top-K及字符串投票，同时融合车牌颜色并保留vote history。不要提前扩展四路，也不要修改`alpr_topk_capture.py`。
+
+## 2026-08-21 C++ PlateFusion 与中文车牌叠加已完成
+
+`rk3588_vehicle_system`已推进到PC Stage 11。新增`IPlateFusion/ConfidenceWeightedPlateFusion`，号码和颜色按Track ID独立保存并以质量分乘置信度加权；支持Top-K、同帧去重、滚动历史、过期清理和reset。未稳定显示最新有效`车牌(单帧)`，满足门槛后自动显示融合`车牌`。
+
+Windows新增`IUtf8TextRenderer/WindowsGdiUtf8TextRenderer`，使用严格UTF-8→UTF-16、系统微软雅黑和GDI小区域绘制。全分辨率正式视频已确认中文标签在车辆框上方，“车牌/单帧/省份字符”均无乱码；原车牌小框只保留质量和颜色诊断。
+
+CTest 11/11通过。610帧正式结果：12.623FPS、CPU单核等效100.001%、工作集459.789MiB；22次OCR/融合更新，11次号码接收，NPU未使用。本轮0个稳定Track是数据事实：Track 1候选分散，Track 3只有两个相同样本，之后断为Track 4，Fusion没有违规跨ID凑票。输出在`rk3588_vehicle_system/runs/pc_stage11_plate_fusion/`，报告为`STAGE11_REPORT.md`。
+
+下一步只生成单路统一`VehicleEvent` JSON，明确区分单帧候选和稳定车牌，并继续保留原始OCR与融合JSONL诊断。之后再做RKNN后端和板端视频验证；不要提前扩展四路，也不要修改`alpr_topk_capture.py`。

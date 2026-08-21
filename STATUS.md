@@ -307,8 +307,60 @@ rkisp0-vir0: check rkisp_mainpath link or isp input
 - 已知问题：224个过期源帧被丢弃；同车仍可能断成多个Track ID，Fusion不跨ID合并；测试视频颜色单一，颜色准确率待多样本确认。
 - 详细报告为`rk3588_vehicle_system/STAGE5_REPORT.md`；下一步先实现车辆ROI内的`IPlateDetector`和`PlateCropper`。
 
+## 2026-08-21 C++ PC Stage 6 PlateDetector + PlateCropper
+
+- 新增标准PlateDetection/PlateCrop类型、`IPlateDetector/YoloObbOnnxPlateDetector`、`IPlateCropper/PlateCropper`、配置和独立测试入口。
+- 模型为`models/plate_detector/best_obb.onnx`，SHA256=`4AD061EA0034182C534FDB6970E3053B84FEB8EE2D92B76C6967F85B94F14BB0`；协议为RGB float32`1×3×320×320`输入和`1×6×2100` OBB输出。
+- CTest 5/5通过；原始车辆ROI独立测试检出真实车牌`0.94`，推理12.600ms，四角框和crop目视正确。
+- 610帧：128次PlateDetector调用，69个车牌检测/有效crop，0无效crop；按Track命中为ID1=45、ID3=2、ID4=22、ID5=0。
+- 性能：17.961FPS、CPU单核等效100%、工作集439.469MiB；PlateDetector推理mean/P50/P95为19.876/19.094/25.072ms；NPU未使用。
+- 当前问题：398个过期帧被丢弃；PlateCropper尚未透视拉正，远景模糊牌尚未质量过滤；黄牌/新能源绿牌覆盖待确认；模型AGPL许可需在产品发布前确认。
+- 详细报告：`rk3588_vehicle_system/STAGE6_REPORT.md`。下一步只实现`PlateQualityEvaluator`。
+
+## 2026-08-21 C++ PC Stage 7 PlateQualityEvaluator
+
+- 新增标准`PlateQuality`、`IPlateQualityEvaluator/OpenCvPlateQualityEvaluator`、完整配置解析和独立单测，并接入PlateCropper之后。
+- CTest 6/6通过；测试覆盖输入/配置校验、尺寸、模糊、过曝、低对比度、综合分拒绝和正常放行。
+- 610帧产生73个有效车牌crop，33个通过、40个拒绝且拒绝原因均为`size`；保存文件名包含质量分和pass/reject。
+- 性能为18.236FPS、CPU单核等效100.002%、工作集435.910MiB；评价自身mean/P95为0.056/0.107ms，NPU未使用。
+- 详细报告：`rk3588_vehicle_system/STAGE7_REPORT.md`。下一步只实现独立`IPlateRectifier`，不提前接OCR。
+
+## 2026-08-21 C++ PC Stage 8 PlateRectifier
+
+- 新增标准`RectifiedPlate`、`IPlateRectifier/OpenCvPlateRectifier`、配置、独立单测和矫正结果保存，并接在质量通过条件之后。
+- CTest 7/7通过；合成梯形恢复MAE为4.246，独立1000次基准平均约0.286ms/call。
+- 610帧完成28次Rectifier调用，28次Perspective成功、0回退、0失败；正式mean/P50/P95为0.530/0.494/0.718ms。
+- 端到端17.326FPS、CPU单核等效99.998%、工作集440.609MiB，NPU未使用；本轮丢弃433个过期帧。
+- 详细报告：`rk3588_vehicle_system/STAGE8_REPORT.md`。下一步只实现HSV车牌颜色分类。
+
+## 2026-08-21 C++ PC Stage 9 HSVPlateColorClassifier
+
+- 新增`IPlateColorClassifier/HsvPlateColorClassifier`、完整HSV配置、独立合成/真实图测试和主链路统计；只对质量通过且成功矫正的车牌调用。
+- CTest 8/8通过；独立1000次合成蓝牌约0.104ms/call，Stage 8历史28张真实矫正牌复测为27蓝、1其他。
+- 610帧正式调用42次，输出37蓝、3白、2其他；分类mean/P50/P95为0.091/0.086/0.123ms，端到端17.880FPS，CPU单核等效100.002%，工作集449.234MiB，NPU未使用。
+- 3白/2其他均为严重模糊或低饱和样本，且没有人工真值；黄/绿/白/黑真实覆盖待确认。详细报告为`rk3588_vehicle_system/STAGE9_REPORT.md`。
+- 下一步只实现`IPlateRecognizer`和HyperLPR3纯识别后端，不提前实现PlateFusion或四路调度。
+
 ## 2026-08-21 GitHub 发布同步补充
 
 - 已将 `rk3588_vehicle_system` 的一方源码、头文件、测试、配置、PowerShell/Python脚本、阶段文档和嵌套 `.gitignore` 加入发布白名单。
 - 白名单只覆盖明确的源码路径；该目录内的构建树、运行结果、第三方预编译依赖、模型二进制和媒体文件继续排除。
 - `tools/sync_github_release.py` 新增受管未提交文件安全续传：内容相同或仅由源文件追加时允许继续，其余冲突拒绝覆盖。
+
+## 2026-08-21 C++ PC Stage 10 HyperLPR3 PlateRecognizer
+
+- 新增`IPlateRecognizer/HyperLpr3OnnxPlateRecognizer`、`PlateOCRResult/PlateRecognizerTiming`、配置、独立基准测试和逐调用JSONL诊断输出。
+- 模型为HyperLPR3 0.1.3 `rpv3_mdict_160_r3.onnx`，SHA256=`8FB08B5DB2ADECCF43B05006BBBF409E4659D08D72E46A62631C00FF751EAEB3`；协议为BGR float32`1×3×48×160`输入和float32`1×20×78`输出。
+- Python官方与C++基准图均输出`苏E803JV 0.999943`；CTest 9/9通过。
+- 610帧完成20次OCR：20次非空、13次接收、7次因格式拒绝；OCR推理mean/P50/P95为18.258/17.043/24.439ms，总耗时mean/P95为18.370/24.536ms。
+- 端到端15.382FPS、CPU单核等效100.000%、工作集455.980MiB，NPU未使用；丢弃567个过期源帧。
+- 单帧合法结果存在明显抖动，详细报告为`rk3588_vehicle_system/STAGE10_REPORT.md`。下一步只实现按Track ID的PlateFusion。
+
+## 2026-08-21 C++ PC Stage 11 PlateFusion 与中文叠加
+
+- 新增`PlateFusionObservation/PlateFusionResult`、`IPlateFusion/ConfidenceWeightedPlateFusion`、配置、独立单测和逐更新`plate_fusion_results.jsonl`。
+- 号码与颜色独立按质量和置信度加权；支持Top-K、同帧去重、30条滚动历史、60源帧过期清理、Track隔离和reset。未稳定显示最新单帧，稳定后切换融合结果。
+- 新增`IUtf8TextRenderer/WindowsGdiUtf8TextRenderer`，严格UTF-8转UTF-16并使用系统微软雅黑，仅绘制小型标签区域；控制台设为UTF-8，JSONL保持原始UTF-8。
+- 完整清理构建后CTest 11/11通过；`京A12345`、`豫JC521G`转换和图像渲染测试通过。正式视频帧已确认中文车牌位于对应车辆框上方且无乱码。
+- 610帧完成22次OCR和22次PlateFusion更新，11次OCR接收；端到端12.623FPS、CPU单核等效100.001%、工作集459.789MiB，NPU未使用。自然视频0个稳定Track，原因是样本不足/候选分散及断Track，并非融合未执行。
+- 输出与详细边界见`rk3588_vehicle_system/STAGE11_REPORT.md`。下一步生成单路统一`VehicleEvent` JSON。
