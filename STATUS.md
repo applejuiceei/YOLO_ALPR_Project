@@ -258,3 +258,10 @@ rkisp0-vir0: check rkisp_mainpath link or isp input
 - 已新增 `NEW_CHAT_HANDOFF_20260814.md`，共约900行，汇总当前项目目标、已实现功能、对话工作历程、关键脚本、文件结构、正式测试结果、历史尝试、版本风险、过时结论和下一步路线。
 - 文档已核对当前工作区和实际 JSON/JSONL：补充用户 2502 帧 GUI 原速运行 `24.001 FPS`、7月30日板端长跑/对焦/后聚焦结果、PP-OCR尚未正式训练，以及 Gitea 轻量发布版落后于本地8月12日实现等状态。
 - 未删除、覆盖或回滚任何历史结果；Windows 基准 `alpr_topk_capture.py` 未修改。
+
+## 2026-08-15 GitHub 发布白名单同步
+
+- 新增 `release_manifest.txt`，覆盖根目录一方 Python/Markdown、PP-OCR源码配置、RK3588直接源码/启动脚本和项目维护工具；不递归进入数据集、第三方源码、依赖副本、运行结果、证据包或 offline bundle。
+- 新增 `tools/sync_github_release.py`，默认 dry-run；使用 `--apply` 时先验证目标是干净的 `codex/github-release` worktree，再执行新增/更新复制。
+- 同步器不删除目标文件，不自动暂存、提交或推送；单文件硬上限为 95 MiB，并检查禁止目录、文件类型、敏感文件名和常见凭据格式。
+- Windows 基准 `alpr_topk_capture.py` 未修改；现有 `.idea/vcs.xml` 和运行结果目录不在白名单中，不会被同步。

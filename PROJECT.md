@@ -178,3 +178,10 @@
 - 该文档同时区分三条工作线：Windows 原速 HyperLPR3 纯识别、RK3588 + SC850SL 长期道路部署、PP-OCRv4 Mobile 独立训练准备。
 - 新文档以当前源码和正式运行产物为依据，明确标记旧文档中已经过时的 sensor、`/dev/video53`、纯识别只限离线和远端源码版本等结论。
 - 新对话应先读 `AGENTS.md`，再读 `NEW_CHAT_HANDOFF_20260814.md`；需要继续 RK 专项时再读 `NEW_CHAT_HANDOFF_20260717.md`。
+
+## 2026-08-15 GitHub 灾难恢复发布目标
+
+- 原项目 `D:\YOLO_ALPR_Project` 继续作为完整开发和本地存档工作区；模型、数据、视频、运行结果不迁入 GitHub 源码发布线。
+- `D:\YOLO_ALPR_Project_GitHubRelease` 作为 `codex/github-release` 的独立 worktree，只接收白名单内的一方源码、配置和文档。
+- `release_manifest.txt` 是批量发布范围的版本化白名单；`tools/sync_github_release.py` 负责预览和同步。
+- 日常同步命令为 `python .\tools\sync_github_release.py --apply`。同步只新增或更新文件，不删除、不暂存、不提交、不推送，并继续执行 95 MiB 与敏感信息保护。

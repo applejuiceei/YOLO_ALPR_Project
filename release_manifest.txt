@@ -1,0 +1,35 @@
+# GitHub 发布白名单
+#
+# 每行是相对于 D:\YOLO_ALPR_Project 的文件或 glob。
+# 同步脚本只复制这里匹配到的普通文本源码文件；不会删除发布目录中的文件。
+# 新增核心目录时应先审查，再把精确路径或受控 glob 加到本文件。
+
+# 根目录一方源码、项目记忆和操作文档
+*.py
+*.md
+alpr_topk_capture_vs_sahi_flowchart.svg
+
+# PP-OCRv4 Mobile 一方源码、说明、字符表和训练配置
+ppocr_plate/**/*.py
+ppocr_plate/*.md
+ppocr_plate/*.txt
+ppocr_plate/configs/*.yml
+
+# RK3588 一方 C++ 示例（不递归进入 ByteTrack/Eigen 第三方源码）
+RK3588/main.cpp
+RK3588/dict.txt
+
+# RK3588 直接源码、转换工具、启动脚本和必要文本配置
+# 只匹配 RK3588_dev 根层，不递归进入结果、证据包和 offline_bundle。
+RK3588_dev/*.py
+RK3588_dev/*.sh
+RK3588_dev/*.cpp
+RK3588_dev/CMakeLists.txt
+RK3588_dev/dict.txt
+RK3588_dev/dataset.txt
+
+# 项目维护工具；包含本同步脚本本身
+tools/**/*.py
+
+# 白名单自身，确保新电脑能复用同一发布流程
+release_manifest.txt

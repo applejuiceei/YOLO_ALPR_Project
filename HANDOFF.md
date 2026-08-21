@@ -391,3 +391,36 @@ D:\YOLO_ALPR_Project\NEW_CHAT_HANDOFF_20260814.md
 ```
 
 该文档已经汇总当前项目目标、实现内容、全部关键脚本、文件结构、HyperLPR3/PP-OCR/RK测试结果、历史尝试、过时结论、Git/远端版本差异、风险和下一步，并附有可直接复制的新对话提示词。
+
+## 2026-08-15 一条命令同步 GitHub 发布源码
+
+原工作区继续用于开发和实验：
+
+```text
+D:\YOLO_ALPR_Project
+```
+
+发布 worktree：
+
+```text
+D:\YOLO_ALPR_Project_GitHubRelease
+```
+
+在原工作区运行以下一条命令，会按 `release_manifest.txt` 把新增或变化的一方源码同步到 `codex/github-release` 工作区：
+
+```powershell
+python .\tools\sync_github_release.py --apply
+```
+
+安全行为：
+
+- 写入前验证发布目录存在、当前分支是 `codex/github-release` 且没有未提交更改。
+- 拒绝数据、第三方依赖、运行结果、证据包、敏感文件和单个达到或超过 95 MiB 的文件。
+- 只新增或更新，不删除目标文件；不自动 `git add`、commit 或 push。
+- 命令完成后，在 VS Code 单独打开发布 worktree，检查源代码管理差异，再人工暂存、提交和推送。
+
+仅查看同步计划、不写入时运行：
+
+```powershell
+python .\tools\sync_github_release.py
+```
